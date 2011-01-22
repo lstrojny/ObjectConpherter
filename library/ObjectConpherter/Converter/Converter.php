@@ -41,6 +41,7 @@ class Converter
             }
 
             $property = $class->getProperty($propertyName);
+            $property->setAccessible(true);
             $propertyValue = $property->getValue($object);
 
             if (is_object($propertyValue)) {

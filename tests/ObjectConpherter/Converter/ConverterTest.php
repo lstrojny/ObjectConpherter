@@ -7,6 +7,21 @@ use ObjectConpherter\Configuration\Configuration,
 class Superclass
 {
     public $property;
+    protected $protectedProperty;
+    private $privateProperty;
+    public static $publicStaticProperty;
+    protected static $protectedStaticProperty;
+    private static $privateStaticProperty;
+
+    public function __construct(array $properties = array())
+    {
+        $class = new \ReflectionObject($this);
+        foreach ($properties as $propertyName => $propertyValue) {
+            $property = $class->getProperty($propertyName);
+            $property->setAccessible(true);
+            $property->setValue($this, $propertyValue);
+        }
+    }
 }
 
 class Subclass extends Superclass
@@ -73,7 +88,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->property = new Subclass();
         $object->property->property = 'test';
         $array = array('property' => array('property' => 'test'));
-        var_dump($object);
 
         $this->_configuration->addType('ObjectConpherter\Converter\Superclass', array('property'));
         $this->assertSame($array, $this->_converter->convert($object));
@@ -88,6 +102,21 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->_configuration->addType('ObjectConpherter\Converter\Interface1', array('iface1'));
         $this->_configuration->addType('ObjectConpherter\Converter\Interface2', array('iface2'));
+        $this->assertSame($array, $this->_converter->convert($object));
+    }
+
+    function testExportingPropertiesWithVisibilityOtherThanPublic()
+    {
+        $array = array(
+                  'protectedProperty'       => 'protected',
+                  'privateProperty'         => 'private',
+                  'publicStaticProperty'    => 'publicStatic',
+                  'protectedStaticProperty' => 'protectedStatic',
+                  'privateStaticProperty'   => 'privateStatic',
+                 );
+        $object = new Superclass($array);
+
+        $this->_configuration->addType('ObjectConpherter\Converter\Superclass', array_keys($array));
         $this->assertSame($array, $this->_converter->convert($object));
     }
 
