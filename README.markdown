@@ -1,5 +1,6 @@
-ObjectConpherter: Converting PHP Objects Into Array Representations Since 2011
-==============================================================================
+ObjectConpherter
+================
+Converting PHP Objects Into Array Representations Since 2011
 
 Mission Statement
 -----------------
