@@ -13,6 +13,12 @@ class Converter
         $this->_configuration = $configuration;
     }
 
+    /**
+     *
+     * @param <type> $object
+     * @param <type> $query
+     * @return array
+     */
     public function convert($object)
     {
         $array = array();
@@ -28,7 +34,7 @@ class Converter
         }
 
         $class = new ReflectionObject($object);
-        $propertyNames = $this->_getTypeHierarchy($object, $class);
+        $propertyNames = $this->_getConfiguredPropertiesInTypeHierarchy($object, $class);
 
         if (!$propertyNames) {
             return false;
@@ -60,7 +66,7 @@ class Converter
         return true;
     }
 
-    protected function _getTypeHierarchy($object, ReflectionObject $class)
+    protected function _getConfiguredPropertiesInTypeHierarchy($object, ReflectionObject $class)
     {
         $className = get_class($object);
         do {

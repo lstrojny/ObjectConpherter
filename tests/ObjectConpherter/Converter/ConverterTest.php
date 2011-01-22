@@ -66,7 +66,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                   'prop3' => array('propNested1' => 'propValNested1'),
                  );
 
-        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'prop4', 'propNested1'));
+        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
     }
 
@@ -118,6 +118,19 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->_configuration->addType('ObjectConpherter\Converter\Superclass', array_keys($array));
         $this->assertSame($array, $this->_converter->convert($object));
+    }
+
+    function testLimitingConversionDepth()
+    {
+        $array = array(
+                  'prop1' => 'propVal1',
+                  'prop2' => 'propVal2',
+                  'prop3' => array('propNested1' => 'propValNested1'),
+                 );
+
+        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
+        $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
+        $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array)));
     }
 
     function toObject(array $array)
