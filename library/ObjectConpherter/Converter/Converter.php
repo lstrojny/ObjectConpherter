@@ -19,16 +19,24 @@ class Converter
      * @param <type> $query
      * @return array
      */
-    public function convert($object)
+    public function convert($object, $queryString = '/*/*/*/')
     {
+        $query = Query::parse($queryString);
+        var_dump($query);
+
         $array = array();
         $visited = array();
-        $this->_convert($object, $array, $visited);
+        
+        $this->_convert($object, $array, $visited, $query, array('root'));
         return $array;
     }
 
-    protected function _convert($object, array &$array, $visited)
+    protected function _convert($object, array &$array, array &$visited, Query $query, array $levels)
     {
+        if (!$query->matches($levels)) {
+            return false;
+        }
+
         if ($this->_recursionDetected($object, $visited)) {
             return false;
         }
@@ -46,6 +54,10 @@ class Converter
                 continue;
             }
 
+            if (!$query->matches(array_merge($levels, array($propertyName)))) {
+                continue;
+            }
+
             $property = $class->getProperty($propertyName);
             $property->setAccessible(true);
             $propertyValue = $property->getValue($object);
@@ -53,8 +65,9 @@ class Converter
             if (is_object($propertyValue)) {
 
                 $array[$propertyName] = array();
+                $levels[] = $propertyName;
 
-                if (!$this->_convert($propertyValue, $array[$propertyName], $visited)) {
+                if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $levels)) {
                     unset($array[$propertyName]);
                 }
 

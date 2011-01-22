@@ -3,34 +3,58 @@ namespace ObjectConpherter\Converter;
 
 class Query
 {
-    protected $_parts = array();
+    protected $_queryParts = array();
+
+    public static function parse($queryString)
+    {
+        $parts = array();
+        $subQueries = explode(',', $queryString);
+        array_walk($subQueries, function($subQuery) use(&$parts) {
+            $parts[] = array_filter(explode('/', $subQuery));
+        });
+
+        return new static($parts);
+    }
 
     public function __construct(array $parts)
     {
-        $this->_parts = $parts;
+        $this->_queryParts = $parts;
     }
 
-    public function matches(array $hierarchy)
+    public function __toString()
     {
-        $parts = $this->_parts;
-        while ($hierarchyElement = array_shift($hierarchy)) {
-            $part = array_shift($parts);
+        $subQueries = array_map(
+                        function($subQueryParts) {
+                            return '/' . join('/', $subQueryParts) . '/';
+                        },
+                        $this->_queryParts
+                      );
+        return join(',', $subQueries);
+    }
 
-            /** End of query reached, no remaining query part, so return true */
-            if (!$part and !$hierarchyElement) {
-                return true;
-            }
+    public function matches(array $levels)
+    {
+        foreach ($this->_queryParts as $subQueryParts) {
+            foreach ($levels as $level) {
+                $subQueryPart = array_shift($subQueryParts);
 
-            /** Wildcard query */
-            if ($part === '*') {
-                continue;
-            }
+                /** End of query reached, no remaining query part, so return true */
+                if (!$subQueryPart and !$level) {
+                    return true;
+                }
 
-            /** Query matches? */
-            if ($part != $hierarchyElement) {
-                return false;
+                /** Wildcard query found */
+                if ($subQueryPart === '*') {
+                    continue;
+                }
+
+                /** Query matches? */
+                if ($subQueryPart != $level) {
+                    continue 2;
+                }
             }
+            return true;
         }
-        return true;
+        return false;
     }
 }

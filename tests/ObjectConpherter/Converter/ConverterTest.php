@@ -130,7 +130,41 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
-        $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array)));
+        $this->assertSame($array, $this->_converter->convert($this->toObject($array), '/*/*/*'));
+        $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array), '/*/prop1/,/*/prop2/'));
+        $this->assertSame(
+            array('prop1' => 'propVal1', 'prop3' => array('propNested1' => 'propValNested1')),
+            $this->_converter->convert($this->toObject($array), '/*/prop1/,/*/prop3/*/')
+        );
+    }
+
+    function testComplicatedDumping()
+    {
+        $object = new SuperClass(array(
+                                  'property' => 'prop1',
+                                  'protectedProperty' => new Subclass(array('property' => 'subclassPropertyVal')),
+                                  'privateProperty' => new Superclass(
+                                            array('protectedProperty' => new Subclass(array('property' => 'nestedProp')))
+                                   ),
+                                 )
+        );
+        $this->_configuration->addType(
+            'ObjectConpherter\Converter\Superclass',
+            array('property', 'protectedProperty', 'privateProperty')
+        );
+        $this->_configuration->addType(
+            'ObjectConpherter\Converter\Subclass',
+            array('property')
+        );
+        print_r($object);
+        $this->assertSame(
+            array('property' => 'prop1', 'protectedProperty' => array('property' => 'subclassPropertyVal')),
+            $this->_converter->convert($object, '/root/property/,/root/protectedProperty/*/')
+        );
+        $this->assertSame(
+            array('privateProperty' => array('protectedProperty' => array())),
+            $this->_converter->convert($object, '/root/privateProperty/protectedProperty/')
+        );
     }
 
     function toObject(array $array)
