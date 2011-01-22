@@ -31,11 +31,11 @@ Design Notes
 ------------
 Filter
 
-  interface Filter
-  {
-      public function filterName($object, $propertyName, $propertyValue)
-      public function filterValue($object, $propertyName, $propertyValue);
-  }
+   interface Filter
+   {
+       public function filterName($object, $propertyName, $propertyValue)
+       public function filterValue($object, $propertyName, $propertyValue);
+   }
 
 Warning
 -------
