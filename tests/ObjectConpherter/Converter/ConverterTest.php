@@ -205,6 +205,29 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    function testMappingInfoDefinedForConcreteClassAndInterfaces()
+    {
+        $object = new InterfaceImplementor();
+        $object->concrete1 = "concreteVal1";
+        $object->concrete2 = "concreteVal2";
+        $object->iface11 = "ifaceVal11";
+        $object->iface21 = "ifaceVal21";
+        $object->iface22 = "ifaceVal22";
+        $this->_configuration->addType('ObjectConpherter\Converter\InterfaceImplementor', array('concrete1', 'concrete2'))
+                             ->addType('ObjectConpherter\Converter\Interface1', array('iface11'))
+                             ->addType('ObjectConpherter\Converter\Interface2', array('iface21', 'iface22'));
+        $this->assertSame(
+            array(
+              'concrete1' => 'concreteVal1',
+              'concrete2' => 'concreteVal2',
+              'iface11'   => 'ifaceVal11',
+              'iface21'   => 'ifaceVal21',
+              'iface22'   => 'ifaceVal22',
+            ),
+            $this->_converter->convert($object)
+        );
+    }
+
     function toObject(array $array)
     {
         $memory = array();
