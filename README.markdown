@@ -9,6 +9,9 @@ ObjectConpherter takes your business objects and converts them into arrays while
 keeping there hierarchial structure. The project was born because [we](http://jarlssen.de)
 needed a system to provide array representations of business objects for a JSON API.
 
+License
+-------
+Licensed under the New BSD License
 
 Current Use Cases
 -----------------
@@ -21,8 +24,18 @@ Current Use Cases
     and in XML. For the sake of speed there might be a configuration dumper
     component to convert annotations into plain PHP
 -   A minimal, XQuery-alike interface to define conversion depth of objects.
-    "/_foo/_bar" will export the object passed to the converter itself, the
-    property "_foo" of this object and the property "_bar" of "_foo"
+    "/root/_foo/_bar" will export the property "_foo" of the object passed and
+    the property "_bar" of "_foo"
+
+Design Notes
+------------
+Filter
+
+interface Filter
+{
+    public function filterName($object, $propertyName, $propertyValue)
+    public function filterValue($object, $propertyName, $propertyValue);
+}
 
 Warning
 -------
