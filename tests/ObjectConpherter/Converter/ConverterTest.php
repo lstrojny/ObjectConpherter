@@ -142,7 +142,10 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     {
         $object = new SuperClass(array(
                                   'property' => 'prop1',
-                                  'protectedProperty' => new Subclass(array('property' => 'subclassPropertyVal')),
+                                  'protectedProperty' => new Subclass(array(
+                                                                       'property'          => 'subclassPropVal1',
+                                                                       'protectedProperty' => 'subclassPropVal2'
+                                                                     )),
                                   'privateProperty' => new Superclass(
                                             array('protectedProperty' => new Subclass(array('property' => 'nestedProp')))
                                    ),
@@ -156,14 +159,20 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             'ObjectConpherter\Converter\Subclass',
             array('property')
         );
-        print_r($object);
         $this->assertSame(
-            array('property' => 'prop1', 'protectedProperty' => array('property' => 'subclassPropertyVal')),
+            array('property' => 'prop1', 'protectedProperty' => array('property' => 'subclassPropVal1', 'protectedProperty' => 'subclassPropVal2')),
             $this->_converter->convert($object, '/root/property/,/root/protectedProperty/*/')
         );
         $this->assertSame(
             array('privateProperty' => array('protectedProperty' => array())),
             $this->_converter->convert($object, '/root/privateProperty/protectedProperty/')
+        );
+        $this->assertSame(
+            array(
+             'protectedProperty' => array('property' => 'subclassPropVal1', 'protectedProperty' => 'subclassPropVal2'),
+             'privateProperty' => array('protectedProperty' => array('property' => 'nestedProp')),
+            ),
+            $this->_converter->convert($object, '/root/protectedProperty/*/,/root/privateProperty/protectedProperty/property/')
         );
     }
 

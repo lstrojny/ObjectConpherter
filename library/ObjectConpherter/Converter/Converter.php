@@ -22,7 +22,6 @@ class Converter
     public function convert($object, $queryString = '/*/*/*/')
     {
         $query = Query::parse($queryString);
-        var_dump($query);
 
         $array = array();
         $visited = array();
@@ -50,11 +49,7 @@ class Converter
 
         while ($propertyName = array_shift($propertyNames)) {
 
-            if (!$class->hasProperty($propertyName)) {
-                continue;
-            }
-
-            if (!$query->matches(array_merge($levels, array($propertyName)))) {
+            if (!$class->hasProperty($propertyName) or !$query->matches(array_merge($levels, array($propertyName)))) {
                 continue;
             }
 
@@ -65,9 +60,9 @@ class Converter
             if (is_object($propertyValue)) {
 
                 $array[$propertyName] = array();
-                $levels[] = $propertyName;
+                $nextLevels = array_merge($levels, array($propertyName));
 
-                if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $levels)) {
+                if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $nextLevels)) {
                     unset($array[$propertyName]);
                 }
 
