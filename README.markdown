@@ -20,6 +20,9 @@ Current Use Cases
 -   Configuration readers to support defining export properties as Annotations
     and in XML. For the sake of speed there might be a configuration dumper
     component to convert annotations into plain PHP
+-   A minimal, XQuery-alike interface to define conversion depth of objects.
+    "/_foo/_bar" will export the object passed to the converter itself, the
+    property "_foo" of this object and the property "_bar" of "_foo"
 
 Warning
 -------
