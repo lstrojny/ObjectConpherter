@@ -300,6 +300,48 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    function testComplicatedNestedObjects()
+    {
+        $stack = new \SplStack();
+        $stack->push(array(new \ArrayObject(array('foo', new Subclass(array('protectedProperty' => 'p3'))))));
+
+        $object = array(
+                    new Superclass(array('property' => 'p1')),
+                    new Superclass(array('property' => 'p2')),
+                    $stack,
+                    new Subclass(array('protectedProperty' => new Superclass(array('property' => 'p4'))))
+                  );
+
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'))
+                             ->exportProperties('ObjectConpherter\Converter\Subclass', array('protectedProperty'));
+
+        $this->assertSame(
+            array(
+              array('property' => 'p1'),
+              array('property' => 'p2'),
+              array(array(array('foo', array('protectedProperty' => 'p3', 'property' => null)))),
+              array('protectedProperty' => array('property' => 'p4'), 'property' => null)
+            ),
+            $this->_converter->convert($object, '/*/*/*/*/*/*/')
+        );
+
+        $this->assertSame(
+            array(
+              0 => array('property' => 'p1'),
+              2 => array(array(array(1 => array('protectedProperty' => 'p3')))),
+            ),
+            $this->_converter->convert($object, '/root/0/property/,/root/2/0/0/1/protectedProperty')
+        );
+    }
+
+    function testLimitingListItem()
+    {
+        $object = array(new Superclass(array('property' => 1)));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'));
+        $this->assertSame(array(0 => array('property' => 1)), $this->_converter->convert($object));
+        $this->assertSame(array(0 => array('property' => 1)), $this->_converter->convert($object, '/root/0/*'));
+    }
+
     function testPassingQueryObjectInsteadOfQueryString()
     {
         $array = array('prop1' => 'propVal1', 'prop2' => 'propVal2');

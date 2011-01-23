@@ -56,9 +56,9 @@ class Query
             foreach ($levels as $level) {
                 $subQueryPart = array_shift($subQueryParts);
 
-                /** End of query reached, no remaining query part, so return true */
-                if (!$subQueryPart and !$level) {
-                    return true;
+                /** End of query reached, still levels, so return false */
+                if ($subQueryPart === null) {
+                    return false;
                 }
 
                 /** Wildcard query found */

@@ -93,12 +93,12 @@ class Converter
      * @param array $array
      * @param array $visited
      * @param ObjectConpherter\Converter\Query $query
-     * @param array $levels
+     * @param array $hierarchy
      * @return boolean
      */
-    protected function _convert($object, array &$array, array &$visited, Query $query, array $levels)
+    protected function _convert($object, array &$array, array &$visited, Query $query, array $hierarchy)
     {
-        if (!$query->matches($levels)) {
+        if (!$query->matches($hierarchy)) {
             return false;
         }
 
@@ -107,22 +107,29 @@ class Converter
         }
 
         if ($object instanceof Traversable or is_array($object)) {
-
             $returnValue = false;
             foreach ($object as $listKey => $listElement) {
-                if ($this->_convertSubObject($object, $array, $visited, $query, $levels, $listElement, $listKey)) {
+                if ($this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $listElement, $listKey)) {
                     $returnValue = true;
                 }
             }
             return $returnValue;
+
+        } elseif (!is_object($object)) {
+
+            /** Found a scalar value or null, just assign it */
+            $array = $object;
+
+            return true;
         }
 
-        $class = new ReflectionObject($object);
         $propertyNames = $this->_configuration->getHierarchyProperties(get_class($object));
 
         if (!$propertyNames) {
             return false;
         }
+
+        $class = new ReflectionObject($object);
 
         while ($propertyName = array_shift($propertyNames)) {
 
@@ -130,7 +137,7 @@ class Converter
                 continue;
             }
 
-            if (!$query->matches(array_merge($levels, array($propertyName)))) {
+            if (!$query->matches(array_merge($hierarchy, array($propertyName)))) {
                 continue;
             }
 
@@ -141,7 +148,7 @@ class Converter
             if (is_scalar($propertyValue) or is_null($propertyValue)) {
                 $array[$propertyName] = $propertyValue;
             } else {
-                $this->_convertSubObject($object, $array, $visited, $query, $levels, $propertyValue, $propertyName);
+                $this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $propertyValue, $propertyName);
             }
         }
 
@@ -157,7 +164,7 @@ class Converter
      * @param array $array
      * @param array $visited
      * @param ObjectConpherter\Converter\Query $query
-     * @param array $levels
+     * @param array $hierarchy
      * @param mixed $propertyValue
      * @param string|integer $propertyName
      * @return boolean
@@ -167,15 +174,15 @@ class Converter
         array &$array,
         array &$visited,
         Query $query,
-        array $levels,
+        array $hierarchy,
         $propertyValue,
         $propertyName
     )
     {
         $array[$propertyName] = array();
-        $levels[] = $propertyName;
+        $hierarchy[] = (string)$propertyName;
 
-        if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $levels)) {
+        if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $hierarchy)) {
             unset($array[$propertyName]);
             return false;
         }
