@@ -108,6 +108,7 @@ class Converter
         }
 
         if ($object instanceof Traversable or is_array($object)) {
+
             $returnValue = false;
             foreach ($object as $listKey => $listElement) {
                 if ($this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $listElement, $listKey)) {
@@ -120,7 +121,6 @@ class Converter
 
             /** Found a scalar value or null, just assign it */
             $array = $object;
-
             return true;
         }
 
@@ -147,7 +147,7 @@ class Converter
             $propertyValue = $property->getValue($object);
 
             if (is_scalar($propertyValue) or is_null($propertyValue)) {
-                $array[$propertyName] = $propertyValue;
+                $this->_appendArrayValue($array, $object, $propertyName, $propertyValue);
             } else {
                 $this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $propertyValue, $propertyName);
             }
@@ -180,15 +180,37 @@ class Converter
         $propertyName
     )
     {
-        $array[$propertyName] = array();
+        $propertyRenamed = $this->_appendArrayValue($array, $object, $propertyName, array());
         $hierarchy[] = (string)$propertyName;
 
-        if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $hierarchy)) {
+        if (!$this->_convert($propertyValue, $array[$propertyRenamed], $visited, $query, $hierarchy)) {
             unset($array[$propertyName]);
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Appends array value to the converter response
+     *
+     * @param array $array
+     * @param mixed $object
+     * @param string $propertyName
+     * @param mixed $propertyValue
+     * @return string Property name
+     */
+    protected function _appendArrayValue(&$array, $object, $propertyName, $propertyValue)
+    {
+        if ($filter = $this->_configuration->getPropertyNameFilter()) {
+
+            $type = is_object($object) ? get_class($object) : gettype($object);
+
+            $propertyName = $filter->filterPropertyName($type, $propertyName);
+        }
+        $array[$propertyName] = $propertyValue;
+
+        return $propertyName;
     }
 
 

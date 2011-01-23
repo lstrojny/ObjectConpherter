@@ -30,6 +30,8 @@
  */
 namespace ObjectConpherter\Configuration;
 
+use ObjectConpherter\Filter\PropertyNameFilter;
+
 class Configuration
 {
     /**
@@ -38,6 +40,13 @@ class Configuration
      * @var array
      */
     protected $_exportProperties = array();
+
+    /**
+     * Property name filter
+     *
+     * @var ObjectConpherter\Filter\PropertyNameFilter
+     */
+    protected $_propertyNameFilter = array();
 
     /**
      * Mark specific properties of a class for export
@@ -52,7 +61,6 @@ class Configuration
 
         return $this;
     }
-
 
     /**
      * Get property mapping information for a class and its ancestors
@@ -90,5 +98,22 @@ class Configuration
     {
         $className = strtolower($className);
         return isset($this->_exportProperties[$className]) ? $this->_exportProperties[$className] : array();
+    }
+
+    public function setPropertyNameFilter(PropertyNameFilter $propertyNameFilter)
+    {
+        $this->_propertyNameFilter = $propertyNameFilter;
+
+        return $this;
+    }
+
+    /**
+     * Return property name filter
+     *
+     * @return ObjectConpherter\Filter\PropertyNameFilter
+     */
+    public function getPropertyNameFilter()
+    {
+        return $this->_propertyNameFilter;
     }
 }

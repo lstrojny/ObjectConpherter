@@ -2,6 +2,7 @@ ObjectConpherter
 ================
 Converting PHP Objects Into Array Representations Since 2011
 
+
 Mission Statement
 -----------------
 
@@ -9,9 +10,11 @@ ObjectConpherter takes your business objects and converts them into arrays while
 keeping there hierarchial structure. The project was born because [we](http://jarlssen.de)
 needed a system to provide array representations of business objects for a JSON API.
 
+
 License
 -------
 Licensed under the New BSD License
+
 
 Current Use Cases
 -----------------
@@ -27,16 +30,7 @@ Current Use Cases
     "/root/_foo/_bar" will export the property "_foo" of the object passed and
     the property "_bar" of "_foo"
 
-Design Notes
-------------
-Filter
-
-    interface Filter
-    {
-        public function filterName($object, $propertyName, $propertyValue)
-        public function filterValue($object, $propertyName, $propertyValue);
-    }
 
 Warning
 -------
-This software is a few seconds old so it can’t do anything right now
+This software is still under heavy development, so literally anything might change

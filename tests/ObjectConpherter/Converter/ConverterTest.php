@@ -351,6 +351,20 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($array, $this->_converter->convert((object)$array, new Query(array(array('*', '*')))));
     }
 
+    function testFilteringPropertyNames()
+    {
+        $object = new stdClass();
+        $object->prop1 = 'p1';
+        $object->___prop2 = 'p2';
+        $object->_prop3 = array('_sp1' => 'v1');
+        $this->_configuration->exportProperties('stdClass', array('prop1', '___prop2', '_prop3'))
+                             ->setPropertyNameFilter(new \ObjectConpherter\Filter\RemoveLeadingUnderscorePropertyNameFilter());
+        $this->assertSame(
+            array('prop1' => 'p1', 'prop2' => 'p2', 'prop3' => array('sp1' => 'v1')),
+            $this->_converter->convert($object)
+        );
+    }
+
     function toObject(array $array)
     {
         $memory = array();
