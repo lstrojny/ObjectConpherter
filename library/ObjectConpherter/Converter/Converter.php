@@ -111,7 +111,7 @@ class Converter
 
             $returnValue = false;
             foreach ($object as $listKey => $listElement) {
-                if ($this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $listElement, $listKey)) {
+                if ($this->_convertSubordinate($object, $array, $visited, $query, $hierarchy, $listElement, $listKey)) {
                     $returnValue = true;
                 }
             }
@@ -146,10 +146,18 @@ class Converter
             $property->setAccessible(true);
             $propertyValue = $property->getValue($object);
 
-            if (is_scalar($propertyValue) or is_null($propertyValue)) {
-                $this->_appendArrayValue($array, $object, $propertyName, $propertyValue);
+            if (is_object($object)) {
+                $this->_convertSubordinate(
+                    $object,
+                    $array,
+                    $visited,
+                    $query,
+                    $hierarchy,
+                    $propertyValue,
+                    $propertyName
+                );
             } else {
-                $this->_convertSubObject($object, $array, $visited, $query, $hierarchy, $propertyValue, $propertyName);
+                $this->_appendArrayValue($array, $object, $propertyName, $propertyValue);
             }
         }
 
@@ -170,7 +178,7 @@ class Converter
      * @param string|integer $propertyName
      * @return boolean
      */
-    protected function _convertSubObject(
+    protected function _convertSubordinate(
         $object,
         array &$array,
         array &$visited,
