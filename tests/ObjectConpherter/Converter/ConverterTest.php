@@ -83,7 +83,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $array = array('prop1' => 'propVal1', 'prop2' => 'propVal2');
 
         $this->assertSame(array(), $this->_converter->convert((object)$array));
-        $this->_configuration->addType('stdClass', array('prop1', 'prop2'));
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2'));
         $this->assertSame($array, $this->_converter->convert((object)$array));
     }
 
@@ -95,7 +95,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                   'prop3' => array('propNested1' => 'propValNested1'),
                  );
 
-        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
     }
 
@@ -107,7 +107,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->prop2 = &$object;
 
         $array = array('prop1' => 'propVal1');
-        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3'));
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2', 'prop3'));
         $this->assertSame($array, $this->_converter->convert($object));
     }
 
@@ -118,7 +118,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->property->property = 'test';
         $array = array('property' => array('property' => 'test'));
 
-        $this->_configuration->addType('ObjectConpherter\Converter\Superclass', array('property'));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'));
         $this->assertSame($array, $this->_converter->convert($object));
     }
 
@@ -129,8 +129,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->iface2 = 'ifaceProp2';
         $array = array('iface1' => 'ifaceProp1', 'iface2' => 'ifaceProp2');
 
-        $this->_configuration->addType('ObjectConpherter\Converter\Interface1', array('iface1'));
-        $this->_configuration->addType('ObjectConpherter\Converter\Interface2', array('iface2'));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Interface1', array('iface1'));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Interface2', array('iface2'));
         $this->assertSame($array, $this->_converter->convert($object));
     }
 
@@ -145,7 +145,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                  );
         $object = new Superclass($array);
 
-        $this->_configuration->addType('ObjectConpherter\Converter\Superclass', array_keys($array));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array_keys($array));
         $this->assertSame($array, $this->_converter->convert($object));
     }
 
@@ -157,7 +157,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                   'prop3' => array('propNested1' => 'propValNested1'),
                  );
 
-        $this->_configuration->addType('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array), '/*/*/*'));
         $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array), '/*/prop1/,/*/prop2/'));
@@ -180,11 +180,11 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                                    ),
                                  )
         );
-        $this->_configuration->addType(
+        $this->_configuration->exportProperties(
             'ObjectConpherter\Converter\Superclass',
             array('property', 'protectedProperty', 'privateProperty')
         );
-        $this->_configuration->addType(
+        $this->_configuration->exportProperties(
             'ObjectConpherter\Converter\Subclass',
             array('property')
         );
@@ -213,9 +213,9 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->iface11 = "ifaceVal11";
         $object->iface21 = "ifaceVal21";
         $object->iface22 = "ifaceVal22";
-        $this->_configuration->addType('ObjectConpherter\Converter\InterfaceImplementor', array('concrete1', 'concrete2'))
-                             ->addType('ObjectConpherter\Converter\Interface1', array('iface11'))
-                             ->addType('ObjectConpherter\Converter\Interface2', array('iface21', 'iface22'));
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\InterfaceImplementor', array('concrete1', 'concrete2'))
+                             ->exportProperties('ObjectConpherter\Converter\Interface1', array('iface11'))
+                             ->exportProperties('ObjectConpherter\Converter\Interface2', array('iface21', 'iface22'));
         $this->assertSame(
             array(
               'concrete1' => 'concreteVal1',
@@ -226,6 +226,87 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             ),
             $this->_converter->convert($object)
         );
+    }
+
+    function testConvertingTraversableOfObjects()
+    {
+        $object = new \ArrayObject();
+        $object->append(new Superclass(array('property' => 'prop1')));
+        $object->append(new Superclass(array('property' => 'prop2')));
+        $object->append(new Superclass(array('property' => 'prop3')));
+
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'));
+        $this->assertSame(
+            array(
+             array('property' => 'prop1'),
+             array('property' => 'prop2'),
+             array('property' => 'prop3'),
+            ),
+            $this->_converter->convert($object)
+        );
+        $this->assertSame(
+            array(
+             1 => array('property' => 'prop2'),
+            ),
+            $this->_converter->convert($object, '/root/1/property')
+        );
+        $this->assertSame(
+            array(
+             1 => array('property' => 'prop2'),
+             2 => array('property' => 'prop3'),
+            ),
+            $this->_converter->convert($object, '/root/1/property,/root/2/*')
+        );
+    }
+
+    function testConvertingArrayOfObjects()
+    {
+        $object = array(
+            new Superclass(array('property' => 'prop1')),
+            new Superclass(array('property' => 'prop2')),
+            new Superclass(array('property' => array(
+                                                'test1' => new Subclass(array('protectedProperty' => 'test1Val')),
+                                                'test2' => new Subclass(array('protectedProperty' => 'test2Val')),
+                                               ))),
+        );
+
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'))
+                             ->exportProperties('ObjectConpherter\Converter\Subclass', array('protectedProperty'));
+
+        $this->assertSame(
+            array(
+             array('property' => 'prop1'),
+             array('property' => 'prop2'),
+             array('property' => array(
+                                  'test1' => array('protectedProperty' => 'test1Val', 'property' => null),
+                                  'test2' => array('protectedProperty' => 'test2Val', 'property' => null),
+                                 )
+             ),
+            ),
+            $this->_converter->convert($object, '/*/*/*/*/*/')
+        );
+        $this->assertSame(
+            array(
+             1 => array('property' => 'prop2'),
+            ),
+            $this->_converter->convert($object, '/root/1/property')
+        );
+        $this->assertSame(
+            array(
+             1 => array('property' => 'prop2'),
+             2 => array('property' => array('test2' => array('protectedProperty' => 'test2Val'))),
+            ),
+            $this->_converter->convert($object, '/root/1/property,/root/2/property/test2/protectedProperty')
+        );
+    }
+
+    function testPassingQueryObjectInsteadOfQueryString()
+    {
+        $array = array('prop1' => 'propVal1', 'prop2' => 'propVal2');
+
+        $this->assertSame(array(), $this->_converter->convert((object)$array));
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2'));
+        $this->assertSame($array, $this->_converter->convert((object)$array, new Query(array(array('*', '*')))));
     }
 
     function toObject(array $array)

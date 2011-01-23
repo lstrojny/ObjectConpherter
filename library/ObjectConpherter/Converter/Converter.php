@@ -31,46 +31,94 @@
 namespace ObjectConpherter\Converter;
 
 use ObjectConpherter\Configuration\Configuration,
-    ReflectionObject;
+    ReflectionObject,
+    Traversable;
 
 class Converter
 {
+    /**
+     * Configuration instance
+     *
+     * @var ObjectConpherter\Configuration\Configuration
+     */
     protected $_configuration;
 
-    public function __construct(Configuration $configuration)
+    /**
+     * Query factory instance
+     *
+     * @var ObjectConpherter\Configuration\Configuration
+     */
+    protected $_queryFactory;
+
+    /**
+     * Create new converter instance
+     *
+     * @param ObjectConpherter\Configuration\Configuration $configuration
+     */
+    public function __construct(Configuration $configuration, QueryFactory $queryFactory = null)
     {
         $this->_configuration = $configuration;
+
+        if (!$queryFactory) {
+            $queryFactory = new QueryFactory();
+        }
+        $this->_queryFactory = $queryFactory;
     }
 
     /**
+     * Convert an object into its array representation
      *
-     * @param <type> $object
-     * @param <type> $query
+     * @param object $object
+     * @param ObjectConpherter\Converter\Query|string $query
      * @return array
      */
-    public function convert($object, $queryString = '/*/*/*/')
+    public function convert($object, $query = '/*/*/*/')
     {
-        $query = Query::parse($queryString);
+        if (!$query instanceof Query) {
+            $query = $this->_queryFactory->parse($query);
+        }
 
         $array = array();
         $visited = array();
         
         $this->_convert($object, $array, $visited, $query, array('root'));
+
         return $array;
     }
 
+    /**
+     * Conversion method which calls itself recursivly for sub objects
+     *
+     * @param mixed $object
+     * @param array $array
+     * @param array $visited
+     * @param ObjectConpherter\Converter\Query $query
+     * @param array $levels
+     * @return boolean
+     */
     protected function _convert($object, array &$array, array &$visited, Query $query, array $levels)
     {
         if (!$query->matches($levels)) {
             return false;
         }
 
-        if ($this->_recursionDetected($object, $visited)) {
+        if ($this->_detectRecursion($object, $visited)) {
             return false;
         }
 
+        if ($object instanceof Traversable or is_array($object)) {
+
+            $returnValue = false;
+            foreach ($object as $listKey => $listElement) {
+                if ($this->_convertSubObject($object, $array, $visited, $query, $levels, $listElement, $listKey)) {
+                    $returnValue = true;
+                }
+            }
+            return $returnValue;
+        }
+
         $class = new ReflectionObject($object);
-        $propertyNames = $this->_getConfiguredPropertiesInTypeHierarchy($object, $class);
+        $propertyNames = $this->_configuration->getHierarchyProperties(get_class($object));
 
         if (!$propertyNames) {
             return false;
@@ -90,47 +138,74 @@ class Converter
             $property->setAccessible(true);
             $propertyValue = $property->getValue($object);
 
-            if (is_object($propertyValue)) {
-
-                $array[$propertyName] = array();
-                $nextLevels = array_merge($levels, array($propertyName));
-
-                if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $nextLevels)) {
-                    unset($array[$propertyName]);
-                }
-
-            } else {
+            if (is_scalar($propertyValue) or is_null($propertyValue)) {
                 $array[$propertyName] = $propertyValue;
+            } else {
+                $this->_convertSubObject($object, $array, $visited, $query, $levels, $propertyValue, $propertyName);
             }
         }
 
         return true;
     }
 
-    protected function _getConfiguredPropertiesInTypeHierarchy($object, ReflectionObject $class)
+    /**
+     * Conversion of sub-objects
+     *
+     * Delegates to _convert()-method for sub-objects and managing array references and level stacking
+     *
+     * @param object $object
+     * @param array $array
+     * @param array $visited
+     * @param ObjectConpherter\Converter\Query $query
+     * @param array $levels
+     * @param mixed $propertyValue
+     * @param string|integer $propertyName
+     * @return boolean
+     */
+    protected function _convertSubObject(
+        $object,
+        array &$array,
+        array &$visited,
+        Query $query,
+        array $levels,
+        $propertyValue,
+        $propertyName
+    )
     {
-        $className = get_class($object);
-        do {
-            $propertyNames = $this->_configuration->getProperties($className);
-        } while ($className = get_parent_class($className));
+        $array[$propertyName] = array();
+        $levels[] = $propertyName;
 
-        foreach ($class->getInterfaceNames() as $interfaceName) {
-            $propertyNames = array_merge($propertyNames, $this->_configuration->getProperties($interfaceName));
+        if (!$this->_convert($propertyValue, $array[$propertyName], $visited, $query, $levels)) {
+            unset($array[$propertyName]);
+            return false;
         }
 
-        return $propertyNames;
+        return true;
     }
 
-    protected function _recursionDetected($object, array &$visited)
-    {
-        $objectHash = spl_object_hash($object);
 
-        if (in_array($objectHash, $visited, true)) {
-            return true;
+    /**
+     * Detects if an object has been visited already
+     *
+     * Keeps track of all visited objects in a list of object hashes so that each instance is only converted
+     * once
+     *
+     * @param object $object
+     * @param array $visited
+     * @return boolean
+     */
+    protected function _detectRecursion($object, array &$visited)
+    {
+        if (!is_object($object)) {
+            return false;
         }
 
-        $visited[] = $objectHash;
+        $objectHash = spl_object_hash($object);
+        if (!in_array($objectHash, $visited, true)) {
+            $visited[] = $objectHash;
+            return false;
+        }
 
-        return false;
+        return true;
     }
 }

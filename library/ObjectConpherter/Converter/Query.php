@@ -34,17 +34,6 @@ class Query
 {
     protected $_queryParts = array();
 
-    public static function parse($queryString)
-    {
-        $parts = array();
-        $subQueries = explode(',', $queryString);
-        array_walk($subQueries, function($subQuery) use(&$parts) {
-            $parts[] = array_filter(explode('/', $subQuery));
-        });
-
-        return new static($parts);
-    }
-
     public function __construct(array $parts)
     {
         $this->_queryParts = $parts;

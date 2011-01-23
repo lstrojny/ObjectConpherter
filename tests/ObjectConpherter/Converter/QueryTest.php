@@ -32,6 +32,11 @@ namespace ObjectConpherter\Converter;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
+    function setUp()
+    {
+        $this->_queryFactory = new QueryFactory();
+    }
+
     function testExactyQuery()
     {
         $q = new Query(array(array('foo', 'bar')));
@@ -68,8 +73,8 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     function testParseQueryString()
     {
-        $this->assertSame('/foo/bar/*/', (string)Query::parse('//foo/bar/*'));
-        $this->assertSame('/*/test/', (string)Query::parse('//*//test//'));
-        $this->assertSame('/*/test/,/foo/', (string)Query::parse('//*//test//,foo'));
+        $this->assertSame('/foo/bar/*/', (string)$this->_queryFactory->parse('//foo/bar/*'));
+        $this->assertSame('/*/test/', (string)$this->_queryFactory->parse('//*//test//'));
+        $this->assertSame('/*/test/,/foo/', (string)$this->_queryFactory->parse('//*//test//,foo'));
     }
 }

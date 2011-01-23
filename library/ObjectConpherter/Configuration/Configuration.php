@@ -32,17 +32,63 @@ namespace ObjectConpherter\Configuration;
 
 class Configuration
 {
-    protected $_mapping = array();
+    /**
+     * Property type mapping
+     *
+     * @var array
+     */
+    protected $_exportProperties = array();
 
-    public function addType($className, array $propertyNames)
+    /**
+     * Mark specific properties of a class for export
+     *
+     * @param string $className
+     * @param array $propertyNames
+     * @return ObjectConpherter\Configuration\Configuration
+     */
+    public function exportProperties($className, array $propertyNames)
     {
-        $this->_mapping[$className] = $propertyNames;
+        $this->_exportProperties[strtolower($className)] = $propertyNames;
 
         return $this;
     }
 
+
+    /**
+     * Get property mapping information for a class and its ancestors
+     *
+     * Traverses the type hierarchy (class, subclass, interfaces) and collects informations about mapped
+     * properties and the hierarchy
+     *
+     * @param string $className
+     * @return array
+     */
+    public function getHierarchyProperties($className)
+    {
+        $propertyNames = array();
+
+        $ancestors = array_merge(
+                        class_parents($className),
+                        class_implements($className)
+                     );
+
+        do {
+            $propertyNames = array_merge($propertyNames, $this->getProperties($className));
+        } while ($className = array_shift($ancestors));
+
+
+        return $propertyNames;
+    }
+
+    /**
+     * Get export properties for a class
+     *
+     * @param string $className
+     * @return array
+     */
     public function getProperties($className)
     {
-        return isset($this->_mapping[$className]) ? $this->_mapping[$className] : array();
+        $className = strtolower($className);
+        return isset($this->_exportProperties[$className]) ? $this->_exportProperties[$className] : array();
     }
 }
