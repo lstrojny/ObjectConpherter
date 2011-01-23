@@ -122,46 +122,48 @@ class Converter
             /** Found a scalar value or null, just assign it */
             $array = $object;
             return true;
-        }
 
-        $propertyNames = $this->_configuration->getHierarchyProperties(get_class($object));
+        } else {
 
-        if (!$propertyNames) {
-            return false;
-        }
+            $propertyNames = $this->_configuration->getHierarchyProperties(get_class($object));
 
-        $class = new ReflectionObject($object);
-
-        while ($propertyName = array_shift($propertyNames)) {
-
-            if (!$class->hasProperty($propertyName)) {
-                continue;
+            if (!$propertyNames) {
+                return false;
             }
 
-            if (!$query->matches(array_merge($hierarchy, array($propertyName)))) {
-                continue;
+            $class = new ReflectionObject($object);
+
+            while ($propertyName = array_shift($propertyNames)) {
+
+                if (!$class->hasProperty($propertyName)) {
+                    continue;
+                }
+
+                if (!$query->matches(array_merge($hierarchy, array($propertyName)))) {
+                    continue;
+                }
+
+                $property = $class->getProperty($propertyName);
+                $property->setAccessible(true);
+                $propertyValue = $property->getValue($object);
+
+                if (is_object($object)) {
+                    $this->_convertSubordinate(
+                        $object,
+                        $array,
+                        $visited,
+                        $query,
+                        $hierarchy,
+                        $propertyValue,
+                        $propertyName
+                    );
+                } else {
+                    $this->_appendArrayValue($array, $object, $propertyName, $propertyValue);
+                }
             }
 
-            $property = $class->getProperty($propertyName);
-            $property->setAccessible(true);
-            $propertyValue = $property->getValue($object);
-
-            if (is_object($object)) {
-                $this->_convertSubordinate(
-                    $object,
-                    $array,
-                    $visited,
-                    $query,
-                    $hierarchy,
-                    $propertyValue,
-                    $propertyName
-                );
-            } else {
-                $this->_appendArrayValue($array, $object, $propertyName, $propertyValue);
-            }
+            return true;
         }
-
-        return true;
     }
 
     /**
@@ -191,8 +193,16 @@ class Converter
         $propertyRenamed = $this->_appendArrayValue($array, $object, $propertyName, array());
         $hierarchy[] = (string)$propertyName;
 
+
+        if ($propertyValueFilter = $this->_configuration->getPropertyValueFilter()) {
+            if (!$propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue)) {
+                $array[$propertyRenamed] = $propertyValue;
+                return true;
+            }
+        }
+        
         if (!$this->_convert($propertyValue, $array[$propertyRenamed], $visited, $query, $hierarchy)) {
-            unset($array[$propertyName]);
+            unset($array[$propertyRenamed]);
             return false;
         }
 
@@ -210,17 +220,29 @@ class Converter
      */
     protected function _appendArrayValue(&$array, $object, $propertyName, $propertyValue)
     {
-        if ($filter = $this->_configuration->getPropertyNameFilter()) {
-
-            $type = is_object($object) ? get_class($object) : gettype($object);
-
-            $propertyName = $filter->filterPropertyName($type, $propertyName);
+        if ($propertyNameFilter = $this->_configuration->getPropertyNameFilter()) {
+            $propertyName = $propertyNameFilter->filterPropertyName($this->_getType($object), $propertyName);
         }
+
+        if ($propertyValueFilter = $this->_configuration->getPropertyValueFilter()) {
+            $propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue);
+        }
+
         $array[$propertyName] = $propertyValue;
 
         return $propertyName;
     }
 
+    /**
+     * Return class or primitive type of $object
+     *
+     * @param mixed $object
+     * @return string
+     */
+    protected function _getType($object)
+    {
+        return is_object($object) ? get_class($object) : gettype($object);
+    }
 
     /**
      * Detects if an object has been visited already
@@ -236,13 +258,13 @@ class Converter
     {
         if (!is_object($object)) {
             return false;
-        }
+    }
 
         $objectHash = spl_object_hash($object);
         if (!in_array($objectHash, $visited, true)) {
             $visited[] = $objectHash;
             return false;
-        }
+}
 
         return true;
     }

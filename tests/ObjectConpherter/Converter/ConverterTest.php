@@ -365,6 +365,20 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    function testFilteringPropertyValues()
+    {
+        $object = new stdClass();
+        $object->date = new \DateTime('2010-01-20 10:20:40');
+        $object->dateList = array(new \DateTime('2011-11-22 11:22:44'));
+        $object->prop = 'p1';
+        $this->_configuration->exportProperties('stdClass', array('date', 'dateList', 'prop'))
+                             ->setPropertyValueFilter(new \ObjectConpherter\Filter\DateTimePropertyValueFilter('Y/m/d H|i|s'));
+        $this->assertSame(
+            array('date' => '2010/01/20 10|20|40', 'dateList' => array('2011/11/22 11|22|44'), 'prop' => 'p1'),
+            $this->_converter->convert($object)
+        );
+    }
+
     function toObject(array $array)
     {
         $memory = array();
