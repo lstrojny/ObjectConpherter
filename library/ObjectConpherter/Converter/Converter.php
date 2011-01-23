@@ -54,6 +54,7 @@ class Converter
      * Create new converter instance
      *
      * @param ObjectConpherter\Configuration\Configuration $configuration
+     * @param ObjectConpherter\Converter\QueryFactory $queryFactory
      */
     public function __construct(Configuration $configuration, QueryFactory $queryFactory = null)
     {
