@@ -13,11 +13,13 @@ needed a system to provide array representations of business objects for a JSON 
 
 License
 -------
-Licensed under the New BSD License
+
+Licensed under New BSD License
 
 
 Current Use Cases
 -----------------
+
 -   Property mapping support for the concrete class, superclass(es), interfaces
 -   Filter infrastructure to allow implementing conversions for specific types
     (e.g. formatting date specifically), renaming of properties (if you use an
@@ -31,6 +33,42 @@ Current Use Cases
     the property "_bar" of "_foo"
 
 
+Usage
+-----
+
+    <?php
+    $configuration = new ObjectConpherter\Configuration\Configuration();
+    $configuration->exportProperties('stdClass', array('property1', 'property2'));
+    $converter = new ObjectConpherter\Converter\Converter($configuration);
+
+    $object = new stdClass();
+    $object->property1 = new stdClass();
+    $object->property1->property1 = 'propVal1_1';
+    $object->property1->property1 = 'propVal1_2';
+    $object->property2 = 'propVal1_2';
+    var_dump($converter->convert($object, '/root/property1/property1,/root/property2'));
+
+Will output:
+
+    array(2) {
+      ["property1"]=>
+      array(1) {
+        ["property1"]=>
+        string(8) "propVal1_1"
+      }
+      ["property2"]=>
+      string(8) "propVal1_2"
+    }
+
+
 Warning
 -------
+
 This software is still under heavy development, so literally anything might change
+
+
+Thank you!
+----------
+
+This software is based on good ideas of Marc Jakubowski <marc.jakubowski@jarlssen.de>
+and Max Beutel <max.beutel@jarlssen.de>
