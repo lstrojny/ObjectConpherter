@@ -28,11 +28,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-namespace ObjectConpherter;
+namespace ObjectConpherter\Configuration\Reader;
 
 use ObjectConpherter\Configuration\Configuration;
 
 interface Reader
 {
-    public function read(Configuration $configuration);
+    /**
+     * Read configuration source data into a configuration object
+     *
+     * @param ObjectConpherter\Configuration\Configuration $configuration
+     * @return void
+     */
+    public function readInto(Configuration $configuration);
 }

@@ -14,8 +14,4 @@
            </properties>
        </class>
    </classes>
-   <filters>
-       <filter type="value" class="ObjectConpherter\Filter\PropertyNameFilter"/>
-       <filter type="name" class="ObjectConpherter\Filter\PropertyValueFilter"/>
-   </filters>
 </converter>
