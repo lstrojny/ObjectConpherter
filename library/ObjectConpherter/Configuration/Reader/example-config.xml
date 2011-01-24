@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<converter>
+   <classes>
+       <class name="stdClass">
+           <properties>
+               <property name="propertyOne"/>
+               <property name="propertyTwo"/>
+           </properties>
+       </class>
+       <class name="ArrayObject">
+           <properties>
+               <property name="0"/>
+               <property name="1"/>
+           </properties>
+       </class>
+   </classes>
+   <filters>
+       <filter type="value" class="ObjectConpherter\Filter\PropertyNameFilter"/>
+       <filter type="name" class="ObjectConpherter\Filter\PropertyValueFilter"/>
+   </filters>
+</converter>

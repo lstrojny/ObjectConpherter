@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element
+    name="converter"
+    xmlns="http://relaxng.org/ns/structure/1.0"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <interleave>
+        <optional>
+            <element name="classes">
+                <oneOrMore>
+                    <element name="class">
+                        <attribute name="name">
+                            <text/>
+                        </attribute>
+                        <element name="properties">
+                            <oneOrMore>
+                                <element name="property">
+                                    <attribute name="name">
+                                        <text/>
+                                    </attribute>
+                                </element>
+                            </oneOrMore>
+                        </element>
+                    </element>
+                </oneOrMore>
+            </element>
+        </optional>
+        <optional>
+            <element name="filters">
+                <oneOrMore>
+                    <element name="filter">
+                        <attribute name="type">
+                            <choice>
+                                <value>name</value>
+                                <value>value</value>
+                            </choice>
+                        </attribute>
+                        <attribute name="class">
+                            <text/>
+                        </attribute>
+                    </element>
+                </oneOrMore>
+            </element>
+        </optional>
+    </interleave>
+</element>
