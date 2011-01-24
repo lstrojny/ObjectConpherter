@@ -70,5 +70,5 @@ This software is still under heavy development, so literally anything might chan
 Thank you!
 ----------
 
-This software is based on good ideas of Marc Jakubowski <marc.jakubowski@jarlssen.de>
-and Max Beutel <max.beutel@jarlssen.de>
+This software is based on good ideas of Marc Jakubowski <marc.jakubowski@jarlssen.de>,
+Max Beutel <max.beutel@jarlssen.de>, Karsten Gohm <karsten.gohm@jarlssen.de>
