@@ -43,15 +43,10 @@ class QueryFactory
      */
     public function parse($queryString)
     {
-        $parts = array();
-        $subQueries = explode(',', $queryString);
-
-        array_walk($subQueries, function($subQuery) use(&$parts) {
-            $parts[] = array_filter(explode('/', $subQuery), function($part) {
+        return new Query(
+            array_filter(explode('/', $queryString), function($part) {
                 return $part != '';
-            });
-        });
-
-        return new Query($parts);
+            })
+        );
     }
 }

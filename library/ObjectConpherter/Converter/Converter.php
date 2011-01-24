@@ -73,11 +73,22 @@ class Converter
      * @param ObjectConpherter\Converter\Query|string $query
      * @return array
      */
-    public function convert($object, $query = '/*/*/*/')
+    public function convert($object, $query = null)
     {
-        if (!$query instanceof Query) {
-            $query = $this->_queryFactory->parse($query);
+        $queryParams = array_slice(func_get_args(), 1);
+
+        if (!$queryParams) {
+            $queryParams[] = '/*/*/*';
         }
+
+        $queries = array();
+        foreach ($queryParams as $query) {
+            if (!$query instanceof Query) {
+                $query = $this->_queryFactory->parse($query);
+            }
+            $queries[] = $query;
+        }
+        $query = new CompositeQuery($queries);
 
         $array = array();
         $visited = array();

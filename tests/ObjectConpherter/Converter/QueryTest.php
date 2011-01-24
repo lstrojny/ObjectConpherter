@@ -39,7 +39,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     function testExactyQuery()
     {
-        $q = new Query(array(array('foo', 'bar')));
+        $q = new Query(array('foo', 'bar'));
         $this->assertTrue($q->matches(array('foo', 'bar')));
         $this->assertFalse($q->matches(array('bar')));
         $this->assertTrue($q->matches(array('foo')));
@@ -47,7 +47,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     function testFuzzyQuery()
     {
-        $q = new Query(array(array('*', 'foo', 'bar', '*')));
+        $q = new Query(array('*', 'foo', 'bar', '*'));
         $this->assertTrue($q->matches(array('bla')));
         $this->assertTrue($q->matches(array('bla', 'foo', 'bar')));
         $this->assertTrue($q->matches(array('bla', 'foo')));
@@ -58,7 +58,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     function testMultiQuery()
     {
-        $q = new Query(array(array('*', 'foo'), array('*', 'bar', '*')));
+        $q = new CompositeQuery(array(new Query(array('*', 'foo')), new Query(array('*', 'bar', '*'))));
         $this->assertTrue($q->matches(array('test', 'foo')));
         $this->assertTrue($q->matches(array('test')));
         $this->assertTrue($q->matches(array('test', 'bar')));
@@ -67,14 +67,14 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($q->matches(array('test', 'bar', 'bla')));
         $this->assertFalse($q->matches(array('test', 'bar', 'bla', 'gnarf')));
 
-        $q = new Query(array(array('root', 'property',), array('root', 'protectedProperty', '*')));
+        $q = new CompositeQuery(array(new Query(array('root', 'property'), new Query(array('root', 'protectedProperty', '*')))));
         $this->assertFalse($q->matches(array('root', 'privateProperty')));
     }
 
     function testParseQueryString()
     {
-        $this->assertSame('/foo/bar/*/', (string)$this->_queryFactory->parse('//foo/bar/*'));
-        $this->assertSame('/*/test/', (string)$this->_queryFactory->parse('//*//test//'));
-        $this->assertSame('/*/test/,/foo/', (string)$this->_queryFactory->parse('//*//test//,foo'));
+        $this->assertSame('/foo/bar/*', (string)$this->_queryFactory->parse('//foo/bar/*'));
+        $this->assertSame('/*/test', (string)$this->_queryFactory->parse('//*//test//'));
+        $this->assertSame('/*/test', (string)$this->_queryFactory->parse('//*//test//'));
     }
 }

@@ -34,45 +34,42 @@ class Query
 {
     protected $_queryParts = array();
 
-    public function __construct(array $parts)
+    public function __construct(array $queryParts)
     {
-        $this->_queryParts = $parts;
+        $this->_queryParts = $queryParts;
     }
 
     public function __toString()
     {
-        $subQueries = array_map(
-                        function($subQueryParts) {
-                            return '/' . join('/', $subQueryParts) . '/';
-                        },
-                        $this->_queryParts
-                      );
-        return join(',', $subQueries);
+        return '/' . join($this->_queryParts, '/');
     }
 
     public function matches(array $levels)
     {
-        foreach ($this->_queryParts as $subQueryParts) {
-            foreach ($levels as $level) {
-                $subQueryPart = array_shift($subQueryParts);
+        $queryParts = $this->_queryParts;
 
-                /** End of query reached, still levels, so return false */
-                if ($subQueryPart === null) {
-                    return false;
-                }
+        foreach ($levels as $level) {
+            $queryPart = array_shift($queryParts);
 
-                /** Wildcard query found */
-                if ($subQueryPart === '*') {
-                    continue;
-                }
+            /** End of query reached, still levels, so return false */
+            if ($queryPart === null) {
 
-                /** Query matches? */
-                if ($subQueryPart != $level) {
-                    continue 2;
-                }
+                return false;
             }
-            return true;
+
+            /** Wildcard query found */
+            if ($queryPart === '*') {
+
+                continue;
+            }
+
+            /** Query matches? */
+            if ($queryPart != $level) {
+
+                return false;
+            }
         }
-        return false;
+
+        return true;
     }
 }
