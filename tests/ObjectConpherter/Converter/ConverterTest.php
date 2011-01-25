@@ -57,6 +57,16 @@ class Subclass extends Superclass
 {
 }
 
+class ToStringClass
+{
+    public $property;
+
+    public function __toString()
+    {
+        return __FUNCTION__;
+    }
+}
+
 interface Interface1
 {
 }
@@ -377,6 +387,17 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             array('date' => '2010/01/20 10|20|40', 'dateList' => array('2011/11/22 11|22|44'), 'prop' => 'p1'),
             $this->_converter->convert($object)
         );
+    }
+
+    function testToStringMethodIsUsedIfNoMappingIsDefined()
+    {
+        $object = new ToStringClass();
+        $object->property = 'value';
+
+        $this->assertSame('__toString', $this->_converter->convert($object));
+
+        $this->_configuration->exportProperties('ObjectConpherter\Converter\ToStringClass', array('property'));
+        $this->assertSame(array('property' => 'value'), $this->_converter->convert($object));
     }
 
     function toObject(array $array)

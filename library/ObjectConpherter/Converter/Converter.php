@@ -133,6 +133,11 @@ class Converter
             /** Found a scalar value or null, just assign it */
             $array = $object;
             return true;
+        } elseif (method_exists($object, '__toString') and
+                  !$this->_configuration->getHierarchyProperties(get_class($object))) {
+
+            $array = $object->__toString();
+            return true;
 
         } else {
 
