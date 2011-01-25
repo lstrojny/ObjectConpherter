@@ -51,6 +51,13 @@ class Converter
     protected $_queryFactory;
 
     /**
+     * Recursion detection enabled?
+     *
+     * @var bool
+     */
+    protected $_recursionDetectionEnabled = true;
+
+    /**
      * Create new converter instance
      *
      * @param ObjectConpherter\Configuration\Configuration $configuration
@@ -272,15 +279,19 @@ class Converter
      */
     protected function _detectRecursion($object, array &$visited)
     {
+        if (!$this->_configuration->isRecursionDetectionEnabled()) {
+            return false;
+        }
+
         if (!is_object($object)) {
             return false;
-    }
+        }
 
         $objectHash = spl_object_hash($object);
         if (!in_array($objectHash, $visited, true)) {
             $visited[] = $objectHash;
             return false;
-}
+        }
 
         return true;
     }

@@ -57,6 +57,13 @@ class Configuration
     protected $_propertyValueFilter;
 
     /**
+     * Recursion detection enabled?
+     *
+     * @var bool
+     */
+    protected $_recursionDetection = true;
+
+    /**
      * Mark specific properties of a class for export
      *
      * @param string $className
@@ -145,5 +152,39 @@ class Configuration
     public function getPropertyValueFilter()
     {
         return $this->_propertyValueFilter;
+    }
+
+    /**
+     * Enable recursion detection
+     *
+     * @return ObjectConpherter\Converter\Converter
+     */
+    public function enableRecursionDetection()
+    {
+        $this->_recursionDetection = true;
+
+        return $this;
+    }
+
+    /**
+     * Disable recursion detection
+     *
+     * @return ObjectConpherter\Converter\Converter
+     */
+    public function disableRecursionDetection()
+    {
+        $this->_recursionDetection = false;
+
+        return $this;
+    }
+
+    /**
+     * Is recursion detection enabled?
+     *
+     * @return bool
+     */
+    public function isRecursionDetectionEnabled()
+    {
+        return $this->_recursionDetection;
     }
 }

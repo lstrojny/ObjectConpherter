@@ -400,6 +400,17 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array('property' => 'value'), $this->_converter->convert($object));
     }
 
+    function testDisableRecursionDetection()
+    {
+        $object = new stdClass();
+        $object->val = 'foo';
+
+        $this->_configuration->exportProperties('stdClass', array('val'));
+        $this->assertSame(array(array('val' => 'foo')), $this->_converter->convert(array($object, $object)));
+        $this->_configuration->disableRecursionDetection();
+        $this->assertSame(array(array('val' => 'foo'), array('val' => 'foo')), $this->_converter->convert(array($object, $object)));
+    }
+
     function toObject(array $array)
     {
         $memory = array();
