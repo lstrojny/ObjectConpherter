@@ -423,6 +423,74 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    function testCompositePropertyNameFilter()
+    {
+        $object = new stdClass();
+
+        $nameFilter1 = $this->getMock('ObjectConpherter\Filter\PropertyNameFilter', array(), array(), '', false, false);
+        $nameFilter2 = $this->getMock('ObjectConpherter\Filter\PropertyNameFilter', array(), array(), '', false, false);
+        $compositeValueFilter = new \ObjectConpherter\Filter\CompositePropertyNameFilter(array($nameFilter1, $nameFilter2));
+        $nameFilter1->expects($this->once())
+                          ->method('filterPropertyName', $object, 'foo')
+                          ->will($this->returnValue(true));
+        $nameFilter2->expects($this->once())
+                      ->method('filterPropertyName', $object, 'foo')
+                      ->will($this->returnValue(true));
+        $this->assertTrue($compositeValueFilter->filterPropertyName($object, 'stdClass', 'foo'));
+    }
+
+    function testCompositePropertyValueFilter()
+    {
+        $object = new stdClass();
+
+        $valueFilter1 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $valueFilter2 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $compositeValueFilter = new \ObjectConpherter\Filter\CompositePropertyValueFilter(array($valueFilter1, $valueFilter2));
+        $valueFilter1->expects($this->once())
+                          ->method('filterPropertyValue', $object, 'property', 'value')
+                          ->will($this->returnValue(true));
+        $valueFilter2->expects($this->once())
+                      ->method('filterPropertyValue', $object, 'property', 'value')
+                      ->will($this->returnValue(true));
+
+        $value = 'foo';
+        $this->assertTrue($compositeValueFilter->filterPropertyValue($object, 'property', $value));
+
+    }
+
+    public function testCompositeValueFilterStopsAfterTheFirstFilterReturningFalse()
+    {
+        $object = new stdClass();
+        
+        $valueFilter1 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $valueFilter2 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $valueFilter1->expects($this->once())
+                     ->method('filterPropertyValue', $object, 'property', 'value')
+                     ->will($this->returnValue(false));
+        $valueFilter2->expects($this->never())
+                     ->method('filterPropertyValue');
+        $compositeValueFilter = new \ObjectConpherter\Filter\CompositePropertyValueFilter(array($valueFilter1, $valueFilter2));
+
+        $this->assertFalse($compositeValueFilter->filterPropertyValue($object, 'property', $value));
+    }
+
+    public function testCompositeValueFilterStopsAfterTheFirstFilterReturningFalse2()
+    {
+        $object = new stdClass();
+
+        $valueFilter1 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $valueFilter2 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
+        $valueFilter1->expects($this->once())
+                     ->method('filterPropertyValue', $object, 'property', 'value')
+                     ->will($this->returnValue(true));
+        $valueFilter2->expects($this->once())
+                     ->method('filterPropertyValue', $object, 'property', 'value')
+                     ->will($this->returnValue(false));
+        $compositeValueFilter = new \ObjectConpherter\Filter\CompositePropertyValueFilter(array($valueFilter1, $valueFilter2));
+
+        $this->assertFalse($compositeValueFilter->filterPropertyValue($object, 'property', $value));
+    }
+
     function toObject(array $array)
     {
         $memory = array();
