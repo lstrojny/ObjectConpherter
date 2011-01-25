@@ -411,6 +411,18 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array(array('val' => 'foo'), array('val' => 'foo')), $this->_converter->convert(array($object, $object)));
     }
 
+    function testPassingListOfQueries()
+    {
+        $object = new stdClass();
+        $object->prop1 = 'pVal1';
+        $object->prop2 = 'pVal2';
+        $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2'));
+        $this->assertSame(
+            array('prop1' => 'pVal1', 'prop2' => 'pVal2'),
+            $this->_converter->convert($object, array('/root/prop1', '/root/prop2'))
+        );
+    }
+
     function toObject(array $array)
     {
         $memory = array();

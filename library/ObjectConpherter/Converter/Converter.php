@@ -77,7 +77,7 @@ class Converter
      * Convert an object into its array representation
      *
      * @param object $object
-     * @param ObjectConpherter\Converter\Query|string $query
+     * @param ObjectConpherter\Converter\Query|string|array $query Query object, query string or list of query objects
      * @return array
      */
     public function convert($object, $query = null)
@@ -86,6 +86,8 @@ class Converter
 
         if (!$queryParams) {
             $queryParams[] = '/*/*/*';
+        } elseif (is_array($queryParams[0])) {
+            $queryParams = $queryParams[0];
         }
 
         $queries = array();
