@@ -28,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/../../library/');
+set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/../../src/');
 spl_autoload_register(function($className) {
     include str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 });

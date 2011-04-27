@@ -7,7 +7,7 @@ class XmlReaderTest extends \PHPUnit_Framework_TestCase
     {
         $this->_configFile = tempnam(sys_get_temp_dir(), __CLASS__);
         $ds = DIRECTORY_SEPARATOR;
-        $this->_exampleConfig = str_replace($ds . 'tests' . $ds, $ds . 'library' . $ds, __DIR__) . $ds . 'example-config.xml';
+        $this->_exampleConfig = str_replace($ds . 'tests' . $ds, $ds . 'src' . $ds, __DIR__) . $ds . 'example-config.xml';
         $this->_configuration = new \ObjectConpherter\Configuration\Configuration();
         $this->_mockedConfiguration = $this->getMock('ObjectConpherter\Configuration\Configuration', array(), array(), '', false);
     }
