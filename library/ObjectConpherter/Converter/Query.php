@@ -46,16 +46,15 @@ class Query
 
     public function matches(array $levels)
     {
-        $queryParts = $this->_queryParts;
-
-        foreach ($levels as $level) {
-            $queryPart = array_shift($queryParts);
+        foreach ($levels as $position => $level) {
 
             /** End of query reached, still levels, so return false */
-            if ($queryPart === null) {
-
+            if (!isset($this->_queryParts[$position])) {
+                
                 return false;
             }
+
+            $queryPart = $this->_queryParts[$position];
 
             /** Wildcard query found */
             if ($queryPart === '*') {

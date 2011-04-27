@@ -44,9 +44,9 @@ class QueryFactory
     public function parse($queryString)
     {
         return new Query(
-            array_filter(explode('/', $queryString), function($part) {
+            array_values(array_filter(explode('/', $queryString), function($part) {
                 return $part != '';
-            })
+            }))
         );
     }
 }

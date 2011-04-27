@@ -32,6 +32,8 @@ namespace ObjectConpherter\Converter;
 
 class CompositeQuery extends Query
 {
+    protected $_levelHistory = array();
+
     public function __construct(array $queries)
     {
         $this->_queryParts = $queries;
@@ -39,13 +41,34 @@ class CompositeQuery extends Query
 
     public function matches(array $levels)
     {
-        foreach ($this->_queryParts as $query) {
+        $queryParts = $this->_queryParts;
+
+        $pendingLevels = $levels;
+        do {
+            $path = join('/', $pendingLevels);
+            if (isset($this->_levelHistory[$path])) {
+                $queryParts = $this->_levelHistory[$path];
+                break;
+            }
+        } while (array_pop($pendingLevels));
+
+
+        $visitingPath = join('/', $levels);
+        if (!isset($this->_levelHistory[$visitingPath])) {
+            $this->_levelHistory[$visitingPath] = new \SplObjectStorage();
+        }
+
+
+        $result = false;
+        foreach ($queryParts as $query) {
             if ($query->matches($levels)) {
 
-                return true;
+                $this->_levelHistory[$visitingPath]->attach($query);
+
+                $result = true;
             }
         }
 
-        return false;
+        return $result;
     }
 }
