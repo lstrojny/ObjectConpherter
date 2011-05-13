@@ -123,7 +123,14 @@ class Converter
             return false;
         }
 
-        if ($this->_detectRecursion($object, $visited)) {
+        /** Check inlined for performance reasons */
+        static $recursionDetectionEnabled = null;
+
+        if ($recursionDetectionEnabled === null) {
+            $recursionDetectionEnabled = $this->_configuration->isRecursionDetectionEnabled();
+        }
+
+        if ($recursionDetectionEnabled && $this->_detectRecursion($object, $visited)) {
             return false;
         }
 
@@ -215,17 +222,23 @@ class Converter
         $propertyName
     )
     {
+        static $propertyValueFilter;
+
+        if ($propertyValueFilter === null) {
+            $propertyValueFilter =  $this->_configuration->getPropertyValueFilter() ?: false;
+        }
+
         $propertyRenamed = $this->_appendArrayValue($array, $object, $propertyName, array());
         $hierarchy[] = (string)$propertyName;
 
 
-        if ($propertyValueFilter = $this->_configuration->getPropertyValueFilter()) {
+        if ($propertyValueFilter) {
             if (!$propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue)) {
                 $array[$propertyRenamed] = $propertyValue;
                 return true;
             }
         }
-        
+
         if (!$this->_convert($propertyValue, $array[$propertyRenamed], $visited, $query, $hierarchy)) {
             unset($array[$propertyRenamed]);
             return false;
@@ -245,11 +258,19 @@ class Converter
      */
     protected function _appendArrayValue(&$array, $object, $propertyName, $propertyValue)
     {
-        if ($propertyNameFilter = $this->_configuration->getPropertyNameFilter()) {
+        static $propertyNameFilter,
+               $propertyValueFilter;
+
+        if ($propertyNameFilter === null) {
+            $propertyNameFilter = $this->_configuration->getPropertyNameFilter() ?: false;
+            $propertyValueFilter = $this->_configuration->getPropertyValueFilter() ?: false;
+        }
+
+        if ($propertyNameFilter) {
             $propertyName = $propertyNameFilter->filterPropertyName($this->_getType($object), $propertyName);
         }
 
-        if ($propertyValueFilter = $this->_configuration->getPropertyValueFilter()) {
+        if ($propertyValueFilter) {
             $propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue);
         }
 
