@@ -369,6 +369,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->_prop3 = array('_sp1' => 'v1');
         $this->_configuration->exportProperties('stdClass', array('prop1', '___prop2', '_prop3'))
                              ->setPropertyNameFilter(new \ObjectConpherter\Filter\RemoveLeadingUnderscorePropertyNameFilter());
+
         $this->assertSame(
             array('prop1' => 'p1', 'prop2' => 'p2', 'prop3' => array('sp1' => 'v1')),
             $this->_converter->convert($object)
@@ -383,6 +384,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object->prop = 'p1';
         $this->_configuration->exportProperties('stdClass', array('date', 'dateList', 'prop'))
                              ->setPropertyValueFilter(new \ObjectConpherter\Filter\DateTimePropertyValueFilter('Y/m/d H|i|s'));
+
         $this->assertSame(
             array('date' => '2010/01/20 10|20|40', 'dateList' => array('2011/11/22 11|22|44'), 'prop' => 'p1'),
             $this->_converter->convert($object)
@@ -407,6 +409,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->_configuration->exportProperties('stdClass', array('val'));
         $this->assertSame(array(array('val' => 'foo')), $this->_converter->convert(array($object, $object)));
+
         $this->_configuration->disableRecursionDetection();
         $this->assertSame(array(array('val' => 'foo'), array('val' => 'foo')), $this->_converter->convert(array($object, $object)));
     }
@@ -461,7 +464,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     public function testCompositeValueFilterStopsAfterTheFirstFilterReturningFalse()
     {
         $object = new stdClass();
-        
+
         $valueFilter1 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
         $valueFilter2 = $this->getMock('ObjectConpherter\Filter\PropertyValueFilter', array(), array(), '', false, false);
         $valueFilter1->expects($this->once())

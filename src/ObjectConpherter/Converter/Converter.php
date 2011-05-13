@@ -58,6 +58,20 @@ class Converter
     protected $_recursionDetectionEnabled = true;
 
     /**
+     * Filter property values
+     *
+     * @var ObjectConpherter\Filter\PropertyValueFilter
+     */
+    protected $_propertyValueFilter;
+
+    /**
+     * Filters property names
+     *
+     * @var ObjectConpherter\Filter\PropertyNameFilter
+     */
+    protected $_propertyNameFilter;
+
+    /**
      * Create new converter instance
      *
      * @param ObjectConpherter\Configuration\Configuration $configuration
@@ -101,7 +115,11 @@ class Converter
 
         $array = array();
         $visited = array();
-        
+
+        $this->_propertyValueFilter = $this->_configuration->getPropertyValueFilter();
+        $this->_propertyNameFilter = $this->_configuration->getPropertyNameFilter();
+        $this->_recursionDetectionEnabled = $this->_configuration->isRecursionDetectionEnabled();
+
         $this->_convert($object, $array, $visited, $query, array('root'));
 
         return $array;
@@ -123,14 +141,8 @@ class Converter
             return false;
         }
 
-        /** Check inlined for performance reasons */
-        static $recursionDetectionEnabled = null;
 
-        if ($recursionDetectionEnabled === null) {
-            $recursionDetectionEnabled = $this->_configuration->isRecursionDetectionEnabled();
-        }
-
-        if ($recursionDetectionEnabled && $this->_detectRecursion($object, $visited)) {
+        if ($this->_recursionDetectionEnabled && $this->_detectRecursion($object, $visited)) {
             return false;
         }
 
@@ -222,18 +234,12 @@ class Converter
         $propertyName
     )
     {
-        static $propertyValueFilter;
-
-        if ($propertyValueFilter === null) {
-            $propertyValueFilter =  $this->_configuration->getPropertyValueFilter() ?: false;
-        }
-
         $propertyRenamed = $this->_appendArrayValue($array, $object, $propertyName, array());
         $hierarchy[] = (string)$propertyName;
 
-
-        if ($propertyValueFilter) {
-            if (!$propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue)) {
+        if ($this->_propertyValueFilter) {
+            $type = $this->_getType($object);
+            if (!$this->_propertyValueFilter->filterPropertyValue($type, $propertyName, $propertyValue)) {
                 $array[$propertyRenamed] = $propertyValue;
                 return true;
             }
@@ -258,20 +264,12 @@ class Converter
      */
     protected function _appendArrayValue(&$array, $object, $propertyName, $propertyValue)
     {
-        static $propertyNameFilter,
-               $propertyValueFilter;
-
-        if ($propertyNameFilter === null) {
-            $propertyNameFilter = $this->_configuration->getPropertyNameFilter() ?: false;
-            $propertyValueFilter = $this->_configuration->getPropertyValueFilter() ?: false;
+        if ($this->_propertyNameFilter) {
+            $propertyName = $this->_propertyNameFilter->filterPropertyName($this->_getType($object), $propertyName);
         }
 
-        if ($propertyNameFilter) {
-            $propertyName = $propertyNameFilter->filterPropertyName($this->_getType($object), $propertyName);
-        }
-
-        if ($propertyValueFilter) {
-            $propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue);
+        if ($this->_propertyValueFilter) {
+            $this->_propertyValueFilter->filterPropertyValue($this->_getType($object), $propertyName, $propertyValue);
         }
 
         $array[$propertyName] = $propertyValue;
@@ -302,7 +300,7 @@ class Converter
      */
     protected function _detectRecursion($object, array &$visited)
     {
-        if (!$this->_configuration->isRecursionDetectionEnabled()) {
+        if (!$this->_recursionDetectionEnabled) {
             return false;
         }
 
