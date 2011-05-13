@@ -31,6 +31,7 @@
 namespace ObjectConpherter\Converter;
 
 use ObjectConpherter\Configuration\Configuration,
+    ObjectConpherter\Cache\CacheInterface,
     ReflectionObject,
     Traversable;
 
@@ -72,31 +73,46 @@ class Converter
     protected $_propertyNameFilter;
 
     /**
+     * Cache implementation
+     *
+     * @var ObjectConpherter\Cache\CacheInterface
+     */
+    protected $_cache;
+
+    /**
+     * List of matching results (from cache)
+     *
+     * @var array
+     */
+    protected $_matchingResult = false;
+
+    /**
      * Create new converter instance
      *
      * @param ObjectConpherter\Configuration\Configuration $configuration
      * @param ObjectConpherter\Converter\QueryFactory $queryFactory
      */
-    public function __construct(Configuration $configuration, QueryFactory $queryFactory = null)
+    public function __construct(
+        Configuration $configuration,
+        CacheInterface $cache = null,
+        QueryFactory $queryFactory = null)
     {
         $this->_configuration = $configuration;
-
-        if (!$queryFactory) {
-            $queryFactory = new QueryFactory();
-        }
-        $this->_queryFactory = $queryFactory;
+        $this->_cache = $cache;
+        $this->_queryFactory = $queryFactory ?: new QueryFactory();
     }
 
     /**
      * Convert an object into its array representation
      *
      * @param object $object
+     * @param string $cacheKey
      * @param ObjectConpherter\Converter\Query|string|array $query Query object, query string or list of query objects
      * @return array
      */
-    public function convert($object, $query = null)
+    public function convert($object, $cacheKey = null, $query = null)
     {
-        $queryParams = array_slice(func_get_args(), 1);
+        $queryParams = array_slice(func_get_args(), 2);
 
         if (!$queryParams) {
             $queryParams[] = '/*/*/*';
@@ -120,7 +136,15 @@ class Converter
         $this->_propertyNameFilter = $this->_configuration->getPropertyNameFilter();
         $this->_recursionDetectionEnabled = $this->_configuration->isRecursionDetectionEnabled();
 
+        if ($cacheKey && $this->_cache) {
+            $this->_matchingResult = $this->_cache->fetchMatchingResult($cacheKey);
+        }
+
         $this->_convert($object, $array, $visited, $query, array('root'));
+
+        if ($cacheKey && $this->_cache) {
+            $this->_cache->saveMatchingResults($cacheKey, $this->_matchingResult);
+        }
 
         return $array;
     }
@@ -137,8 +161,20 @@ class Converter
      */
     protected function _convert($object, array &$array, array &$visited, Query $query, array $hierarchy)
     {
-        if (!$query->matches($hierarchy)) {
-            return false;
+        $cacheLookupKey = join($hierarchy, '/');
+        if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
+
+            if (!$this->_matchingResult[$cacheLookupKey]) {
+                return false;
+            }
+
+        } else {
+            $matchResult = $query->matches($hierarchy);
+            $this->_matchingResult[$cacheLookupKey] = $matchResult;
+
+            if (!$matchResult) {
+                return false;
+            }
         }
 
 
@@ -183,8 +219,20 @@ class Converter
                     continue;
                 }
 
-                if (!$query->matches(array_merge($hierarchy, array($propertyName)))) {
-                    continue;
+                $cacheLookupKey = join($hierarchy, '/') . $propertyName;
+                if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
+
+                    if ($this->_matchingResult[$cacheLookupKey]) {
+                        continue;
+                    }
+
+                } else {
+                    $matchResult = $query->matches(array_merge($hierarchy, array($propertyName)));
+                    $this->_matchingResult[$cacheLookupKey] = $matchResult;
+
+                    if (!$matchResult) {
+                        continue;
+                    }
                 }
 
                 $property = $class->getProperty($propertyName);

@@ -169,11 +169,11 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2', 'prop3', 'propNested1'));
         $this->assertSame($array, $this->_converter->convert($this->toObject($array)));
-        $this->assertSame($array, $this->_converter->convert($this->toObject($array), '/*/*/*'));
-        $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array), '/*/prop1', '/*/prop2/'));
+        $this->assertSame($array, $this->_converter->convert($this->toObject($array), null, '/*/*/*'));
+        $this->assertSame(array('prop1' => 'propVal1', 'prop2' => 'propVal2'), $this->_converter->convert($this->toObject($array), null, '/*/prop1', '/*/prop2/'));
         $this->assertSame(
             array('prop1' => 'propVal1', 'prop3' => array('propNested1' => 'propValNested1')),
-            $this->_converter->convert($this->toObject($array), '/*/prop1', '/*/prop3/*')
+            $this->_converter->convert($this->toObject($array), null, '/*/prop1', '/*/prop3/*')
         );
     }
 
@@ -200,18 +200,18 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertSame(
             array('property' => 'prop1', 'protectedProperty' => array('property' => 'subclassPropVal1', 'protectedProperty' => 'subclassPropVal2')),
-            $this->_converter->convert($object, '/root/property', '/root/protectedProperty/*')
+            $this->_converter->convert($object, null, '/root/property', '/root/protectedProperty/*')
         );
         $this->assertSame(
             array('privateProperty' => array('protectedProperty' => array())),
-            $this->_converter->convert($object, '/root/privateProperty/protectedProperty')
+            $this->_converter->convert($object, null, '/root/privateProperty/protectedProperty')
         );
         $this->assertSame(
             array(
              'protectedProperty' => array('property' => 'subclassPropVal1', 'protectedProperty' => 'subclassPropVal2'),
              'privateProperty' => array('protectedProperty' => array('property' => 'nestedProp')),
             ),
-            $this->_converter->convert($object, '/root/protectedProperty/*', '/root/privateProperty/protectedProperty/property')
+            $this->_converter->convert($object, null, '/root/protectedProperty/*', '/root/privateProperty/protectedProperty/property')
         );
     }
 
@@ -258,14 +258,14 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             array(
              1 => array('property' => 'prop2'),
             ),
-            $this->_converter->convert($object, '/root/1/property')
+            $this->_converter->convert($object, null, '/root/1/property')
         );
         $this->assertSame(
             array(
              1 => array('property' => 'prop2'),
              2 => array('property' => 'prop3'),
             ),
-            $this->_converter->convert($object, '/root/1/property', '/root/2/*')
+            $this->_converter->convert($object, null, '/root/1/property', '/root/2/*')
         );
     }
 
@@ -293,20 +293,20 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
                                  )
              ),
             ),
-            $this->_converter->convert($object, '/*/*/*/*/*')
+            $this->_converter->convert($object, null, '/*/*/*/*/*')
         );
         $this->assertSame(
             array(
              1 => array('property' => 'prop2'),
             ),
-            $this->_converter->convert($object, '/root/1/property')
+            $this->_converter->convert($object, null, '/root/1/property')
         );
         $this->assertSame(
             array(
              1 => array('property' => 'prop2'),
              2 => array('property' => array('test2' => array('protectedProperty' => 'test2Val'))),
             ),
-            $this->_converter->convert($object, '/root/1/property', '/root/2/property/test2/protectedProperty')
+            $this->_converter->convert($object, null, '/root/1/property', '/root/2/property/test2/protectedProperty')
         );
     }
 
@@ -332,7 +332,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
               array(array(array('foo', array('protectedProperty' => 'p3', 'property' => null)))),
               array('protectedProperty' => array('property' => 'p4'), 'property' => null)
             ),
-            $this->_converter->convert($object, '/*/*/*/*/*/*')
+            $this->_converter->convert($object, null, '/*/*/*/*/*/*')
         );
 
         $this->assertSame(
@@ -340,7 +340,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
               0 => array('property' => 'p1'),
               2 => array(array(array(1 => array('protectedProperty' => 'p3')))),
             ),
-            $this->_converter->convert($object, '/root/0/property', '/root/2/0/0/1/protectedProperty')
+            $this->_converter->convert($object, null, '/root/0/property', '/root/2/0/0/1/protectedProperty')
         );
     }
 
@@ -349,7 +349,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $object = array(new Superclass(array('property' => 1)));
         $this->_configuration->exportProperties('ObjectConpherter\Converter\Superclass', array('property'));
         $this->assertSame(array(0 => array('property' => 1)), $this->_converter->convert($object));
-        $this->assertSame(array(0 => array('property' => 1)), $this->_converter->convert($object, '/root/0/*'));
+        $this->assertSame(array(0 => array('property' => 1)), $this->_converter->convert($object, null, '/root/0/*'));
     }
 
     function testPassingQueryObjectInsteadOfQueryString()
@@ -358,7 +358,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(array(), $this->_converter->convert((object)$array));
         $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2'));
-        $this->assertSame($array, $this->_converter->convert((object)$array, new Query(array('*', '*'))));
+        $this->assertSame($array, $this->_converter->convert((object)$array, null, new Query(array('*', '*'))));
     }
 
     function testFilteringPropertyNames()
@@ -422,7 +422,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->_configuration->exportProperties('stdClass', array('prop1', 'prop2'));
         $this->assertSame(
             array('prop1' => 'pVal1', 'prop2' => 'pVal2'),
-            $this->_converter->convert($object, array('/root/prop1', '/root/prop2'))
+            $this->_converter->convert($object, null, array('/root/prop1', '/root/prop2'))
         );
     }
 
