@@ -64,6 +64,13 @@ class Configuration
     protected $_recursionDetection = true;
 
     /**
+     * List of hierarchy resolved exported properties
+     *
+     * @var array
+     */
+    protected $_hierarchyMap = array();
+
+    /**
      * Mark specific properties of a class for export
      *
      * @param string $className
@@ -73,6 +80,8 @@ class Configuration
     public function exportProperties($className, array $propertyNames)
     {
         $this->_exportProperties[strtolower($className)] = $propertyNames;
+
+        $this->_hierarchyMap = array();
 
         return $this;
     }
@@ -88,19 +97,26 @@ class Configuration
      */
     public function getHierarchyProperties($className)
     {
-        $propertyNames = array();
+        $className = strtolower($className);
 
-        $ancestors = array_merge(
-                        class_parents($className),
-                        class_implements($className)
-                     );
+        if (!isset($this->_hierarchyMap[$className])) {
 
-        do {
-            $propertyNames = array_merge($propertyNames, $this->getProperties($className));
-        } while ($className = array_shift($ancestors));
+            $propertyNames = array();
+
+            $ancestors = array_merge(
+                            class_parents($className),
+                            class_implements($className)
+                         );
+
+            do {
+                $propertyNames = array_merge($propertyNames, $this->getProperties($className));
+            } while ($className = array_shift($ancestors));
+
+            $this->_hierarchyMap[$className] = $propertyNames;
+        }
 
 
-        return $propertyNames;
+        return $this->_hierarchyMap[$className];
     }
 
     /**
