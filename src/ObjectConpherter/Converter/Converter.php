@@ -140,7 +140,7 @@ class Converter
             $this->_matchingResult = $this->_cache->fetchMatchingResult($cacheKey);
         }
 
-        $this->_convert($object, $array, $visited, $query, array('root'));
+        $this->_convert($object, $array, $visited, $query, 'root');
 
         if ($cacheKey && $this->_cache) {
             $this->_cache->saveMatchingResults($cacheKey, $this->_matchingResult);
@@ -156,21 +156,20 @@ class Converter
      * @param array $array
      * @param array $visited
      * @param ObjectConpherter\Converter\Query $query
-     * @param array $hierarchy
+     * @param string $hierarchy
      * @return boolean
      */
-    protected function _convert($object, array &$array, array &$visited, Query $query, array $hierarchy)
+    protected function _convert($object, array &$array, array &$visited, Query $query, $hierarchy)
     {
-        $cacheLookupKey = join($hierarchy, '/');
-        if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
+        if ($this->_cache && isset($this->_matchingResult[$hierarchy])) {
 
-            if (!$this->_matchingResult[$cacheLookupKey]) {
+            if (!$this->_matchingResult[$hierarchy]) {
                 return false;
             }
 
         } else {
-            $matchResult = $query->matches($hierarchy);
-            $this->_matchingResult[$cacheLookupKey] = $matchResult;
+            $matchResult = $query->matches(explode('/', $hierarchy));
+            $this->_matchingResult[$hierarchy] = $matchResult;
 
             if (!$matchResult) {
                 return false;
@@ -219,7 +218,7 @@ class Converter
                     continue;
                 }
 
-                $cacheLookupKey = join($hierarchy, '/') . $propertyName;
+                $cacheLookupKey = $hierarchy . '/' . $propertyName;
                 if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
 
                     if (!$this->_matchingResult[$cacheLookupKey]) {
@@ -227,7 +226,7 @@ class Converter
                     }
 
                 } else {
-                    $matchResult = $query->matches(array_merge($hierarchy, array($propertyName)));
+                    $matchResult = $query->matches(array_merge(explode('/', $hierarchy), array($propertyName)));
                     $this->_matchingResult[$cacheLookupKey] = $matchResult;
 
                     if (!$matchResult) {
@@ -267,7 +266,7 @@ class Converter
      * @param array $array
      * @param array $visited
      * @param ObjectConpherter\Converter\Query $query
-     * @param array $hierarchy
+     * @param string $hierarchy
      * @param mixed $propertyValue
      * @param string|integer $propertyName
      * @return boolean
@@ -277,13 +276,13 @@ class Converter
         array &$array,
         array &$visited,
         Query $query,
-        array $hierarchy,
+        $hierarchy,
         $propertyValue,
         $propertyName
     )
     {
         $propertyRenamed = $this->_appendArrayValue($array, $object, $propertyName, array());
-        $hierarchy[] = (string)$propertyName;
+        $hierarchy .= '/' . (string)$propertyName;
 
         if ($this->_propertyValueFilter) {
             $type = $this->_getType($object);
