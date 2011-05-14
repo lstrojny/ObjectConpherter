@@ -222,7 +222,7 @@ class Converter
                 $cacheLookupKey = join($hierarchy, '/') . $propertyName;
                 if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
 
-                    if ($this->_matchingResult[$cacheLookupKey]) {
+                    if (!$this->_matchingResult[$cacheLookupKey]) {
                         continue;
                     }
 
