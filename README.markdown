@@ -46,7 +46,7 @@ Usage
     $object->property1->property1 = 'propVal1_1';
     $object->property1->property1 = 'propVal1_2';
     $object->property2 = 'propVal1_2';
-    var_dump($converter->convert($object, '/root/property1/property1', '/root/property2'));
+    var_dump($converter->convert($object, null, '/root/property1/property1', '/root/property2'));
 
 Will output:
 
