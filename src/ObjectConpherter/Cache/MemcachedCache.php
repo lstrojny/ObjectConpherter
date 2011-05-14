@@ -62,7 +62,7 @@ class MemcachedCache implements CacheInterface
         $matchingResult = $this->_memcacheClient->get($this->_cacheKey($cacheKey));
 
         if ($matchingResult) {
-            return json_decode($matchingResult, true);
+            return unserialize($matchingResult);
         }
 
         return false;
@@ -70,7 +70,7 @@ class MemcachedCache implements CacheInterface
 
     public function saveMatchingResults($cacheKey, array $matchingResult)
     {
-        $this->_memcacheClient->set($this->_cacheKey($cacheKey), json_encode($matchingResult));
+        $this->_memcacheClient->set($this->_cacheKey($cacheKey), serialize($matchingResult));
     }
 
     protected function _cacheKey($cacheKey)

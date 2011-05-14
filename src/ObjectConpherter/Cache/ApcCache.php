@@ -51,7 +51,7 @@ class ApcCache implements CacheInterface
         $matchingResult = apc_fetch($this->_cacheKey($cacheKey), $success);
 
         if ($success) {
-            return json_decode($matchingResult, true);
+            return unserialize($matchingResult);
         }
 
         return false;
@@ -59,7 +59,7 @@ class ApcCache implements CacheInterface
 
     public function saveMatchingResults($cacheKey, array $matchingResult)
     {
-        apc_store($this->_cacheKey($cacheKey), json_encode($matchingResult));
+        apc_store($this->_cacheKey($cacheKey), serialize($matchingResult));
     }
 
     protected function _cacheKey($cacheKey)
