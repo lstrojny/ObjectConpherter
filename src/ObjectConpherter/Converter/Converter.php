@@ -161,20 +161,19 @@ class Converter
      */
     protected function _convert($object, array &$array, array &$visited, Query $query, $hierarchy)
     {
+        /** Inline for performance reasons */
         if ($this->_cache && isset($this->_matchingResult[$hierarchy])) {
-
             if (!$this->_matchingResult[$hierarchy]) {
                 return false;
             }
-
         } else {
             $matchResult = $query->matches(explode('/', $hierarchy));
             $this->_matchingResult[$hierarchy] = $matchResult;
-
             if (!$matchResult) {
                 return false;
             }
         }
+        /** End: Inline for performance reasons */
 
 
         if ($this->_recursionDetectionEnabled && $this->_detectRecursion($object, $visited)) {
@@ -183,22 +182,21 @@ class Converter
 
         if ($object instanceof Traversable or is_array($object)) {
 
+
+            /** Inline for performance reasons */
             $matchKey = $hierarchy . '/*';
-
             if ($this->_cache && isset($this->_matchingResult[$matchKey])) {
-
                 if (!$this->_matchingResult[$matchKey]) {
                     return false;
                 }
-
             } else {
                 $matchResult = $query->matches(explode('/', $matchKey));
                 $this->_matchingResult[$matchKey] = $matchResult;
-
                 if (!$matchResult) {
                     return false;
                 }
             }
+            /** End: Inline for performance reasons */
 
             $returnValue = false;
             foreach ($object as $listKey => $listElement) {
@@ -235,21 +233,21 @@ class Converter
                     continue;
                 }
 
+
+                /** Inline for performance reasons */
                 $cacheLookupKey = $hierarchy . '/' . $propertyName;
                 if ($this->_cache && isset($this->_matchingResult[$cacheLookupKey])) {
-
                     if (!$this->_matchingResult[$cacheLookupKey]) {
                         continue;
                     }
-
                 } else {
                     $matchResult = $query->matches(array_merge(explode('/', $hierarchy), array($propertyName)));
                     $this->_matchingResult[$cacheLookupKey] = $matchResult;
-
                     if (!$matchResult) {
                         continue;
                     }
                 }
+                /** End: Inline for performance reasons */
 
                 $property = $class->getProperty($propertyName);
                 $property->setAccessible(true);
