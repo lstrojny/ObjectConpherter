@@ -183,6 +183,23 @@ class Converter
 
         if ($object instanceof Traversable or is_array($object)) {
 
+            $matchKey = $hierarchy . '/*';
+
+            if ($this->_cache && isset($this->_matchingResult[$matchKey])) {
+
+                if (!$this->_matchingResult[$matchKey]) {
+                    return false;
+                }
+
+            } else {
+                $matchResult = $query->matches(explode('/', $matchKey));
+                $this->_matchingResult[$matchKey] = $matchResult;
+
+                if (!$matchResult) {
+                    return false;
+                }
+            }
+
             $returnValue = false;
             foreach ($object as $listKey => $listElement) {
                 if ($this->_convertSubordinate($object, $array, $visited, $query, $hierarchy, $listElement, $listKey)) {

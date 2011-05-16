@@ -50,7 +50,7 @@ class Query
 
             /** End of query reached, still levels, so return false */
             if (!isset($this->_queryParts[$position])) {
-                
+
                 return false;
             }
 
@@ -63,7 +63,7 @@ class Query
             }
 
             /** Query matches? */
-            if ($queryPart != $level) {
+            if ($level !== '*' && $queryPart != $level) {
 
                 return false;
             }

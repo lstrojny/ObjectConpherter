@@ -402,6 +402,30 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array('property' => 'value'), $this->_converter->convert($object));
     }
 
+    function testTraversalOnlyIfDeepQueryMatches()
+    {
+        $object = new stdClass();
+
+        $object->collection1 = $this->getMockBuilder('IteratorAggregate')->getMock();
+        $object->collection1->expects($this->never())
+                            ->method('getIterator');
+
+        $object->collection2 = $this->getMockBuilder('IteratorAggregate')->getMock();
+        $object->collection2->expects($this->once())
+                            ->method('getIterator')
+                            ->will($this->returnValue(new \ArrayIterator(array('foo' => 'bar'))));
+
+        $this->_configuration->exportProperties('stdClass', array('collection1', 'collection2'));
+        $this->assertSame(
+            array(
+             array(
+              'collection2' => array('foo' => 'bar')
+             )
+            ),
+            $this->_converter->convert(array($object), null, '/root/*/collection2/foo', '/root/*/collection1')
+        );
+    }
+
     function testDisableRecursionDetection()
     {
         $object = new stdClass();
@@ -461,7 +485,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function testCompositeValueFilterStopsAfterTheFirstFilterReturningFalse()
+    function testCompositeValueFilterStopsAfterTheFirstFilterReturningFalse()
     {
         $object = new stdClass();
 

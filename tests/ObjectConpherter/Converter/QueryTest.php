@@ -56,6 +56,15 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($q->matches(array('foo', 'foo', 'bar', 'baz', 'bla')));
     }
 
+    function testHierarchialQuery()
+    {
+        $q = new Query(array('foo', 'bar', '*', '0'));
+        $this->assertTrue($q->matches(array('foo', 'bar', 'baz')));
+        $this->assertFalse($q->matches(array('foo', 'bar', 'baz', '1')));
+        $this->assertTrue($q->matches(array('foo', 'bar', 'baz', '*')));
+        $this->assertFalse($q->matches(array('foo', 'bar', 'baz', '0', '*')));
+    }
+
     function testMultiQuery()
     {
         $q = new CompositeQuery(array(new Query(array('*', 'foo')), new Query(array('*', 'bar', '*'))));
