@@ -36,35 +36,45 @@ Current Use Cases
 Usage
 -----
 
-    <?php
-    $configuration = new ObjectConpherter\Configuration\Configuration();
-    $configuration->exportProperties('stdClass', array('property1', 'property2'));
-    $converter = new ObjectConpherter\Converter\Converter($configuration);
+```php
+<?php
+class User
+{
+    public $id;
+    public $friends = array();
+    protected $name;
 
-    $object = new stdClass();
-    $object->property1 = new stdClass();
-    $object->property1->property1 = 'propVal1_1';
-    $object->property1->property1 = 'propVal1_2';
-    $object->property2 = 'propVal1_2';
-    var_dump($converter->convert($object, null, '/root/property1/property1', '/root/property2'));
+    public function __construct($name)
+    {
+        $this->name = $name;
+    }
+}
+
+$user = new User('John Doe');
+$user->id = 23;
+$user->friends[] = new User('Max Mustermann');
+
+$configuration = new ObjectConpherter\Configuration\Configuration();
+$configuration->exportProperties('User', array('id', 'name', 'friends'));
+$converter = new ObjectConpherter\Converter\Converter($configuration);
+var_dump($converter->convert($object, null, '/root/*', '/root/friends/*/name'));
+```
 
 Will output:
 
-    array(2) {
-      ["property1"]=>
+    ["id"]=>
+      int(23)
+      ["name"]=>
+      string(8) "John Doe"
+      ["friends"]=>
       array(1) {
-        ["property1"]=>
-        string(8) "propVal1_1"
+        [0]=>
+        array(1) {
+          ["name"]=>
+          string(14) "Max Mustermann"
+        }
       }
-      ["property2"]=>
-      string(8) "propVal1_2"
     }
-
-
-Warning
--------
-
-This software is still under heavy development, so literally anything might change
 
 
 Thank you!
@@ -72,4 +82,4 @@ Thank you!
 
 This software is based on good ideas of Marc Jakubowski <marc.jakubowski@jarlssen.de>,
 Max Beutel <max.beutel@jarlssen.de>, Karsten Gohm <karsten.gohm@jarlssen.de>, Stefan Matheis
-<stefan.matheis@jarlssen.de>
+<stefphpan.matheis@jarlssen.de>
