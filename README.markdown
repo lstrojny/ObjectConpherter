@@ -71,4 +71,5 @@ Thank you!
 ----------
 
 This software is based on good ideas of Marc Jakubowski <marc.jakubowski@jarlssen.de>,
-Max Beutel <max.beutel@jarlssen.de>, Karsten Gohm <karsten.gohm@jarlssen.de>
+Max Beutel <max.beutel@jarlssen.de>, Karsten Gohm <karsten.gohm@jarlssen.de>, Stefan Matheis
+<stefan.matheis@jarlssen.de>
