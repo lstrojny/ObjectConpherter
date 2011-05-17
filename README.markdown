@@ -57,12 +57,13 @@ $user->friends[] = new User('Max Mustermann');
 $configuration = new ObjectConpherter\Configuration\Configuration();
 $configuration->exportProperties('User', array('id', 'name', 'friends'));
 $converter = new ObjectConpherter\Converter\Converter($configuration);
-var_dump($converter->convert($object, null, '/root/*', '/root/friends/*/name'));
+var_dump($converter->convert($user, null, '/root/*', '/root/friends/*/name'));
 ```
 
 Will output:
 
-    ["id"]=>
+    array(3) {
+      ["id"]=>
       int(23)
       ["name"]=>
       string(8) "John Doe"
