@@ -30,5 +30,7 @@
  */
 set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/../../src/');
 spl_autoload_register(function($className) {
-    include str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+    if (strpos($className, 'ObjectConpherter\\\\') == 0) {
+        include str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+    }
 });
