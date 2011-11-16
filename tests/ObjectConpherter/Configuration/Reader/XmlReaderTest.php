@@ -53,7 +53,7 @@ class XmlReaderTest extends \PHPUnit_Framework_TestCase
     {
         file_put_contents($this->_configFile, '<converter><invalidTag/></converter>');
         $reader = new XmlReader($this->_configFile, false);
-        $reader->readInto($this->_configuration);
+        $this->assertNull($reader->readInto($this->_configuration));
     }
 
     function testReadingClassPropertiesFromXmlConfig()

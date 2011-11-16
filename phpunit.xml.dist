@@ -4,4 +4,9 @@
     bootstrap="tests/ObjectConpherter/bootstrap.php"
     strict="true"
     verbose="true">
+    <testsuites>
+        <testsuite name="Tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>
