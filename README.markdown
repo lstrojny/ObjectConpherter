@@ -1,5 +1,6 @@
 ObjectConpherter
 ================
+[![Build Status](https://secure.travis-ci.org/lstrojny/ObjectConpherter.png)](http://travis-ci.org/lstrojny/ObjectConpherter)
 Converting PHP Objects Into Array Representations Since 2011
 
 
